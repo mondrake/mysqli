@@ -201,66 +201,16 @@ class Connection extends BaseConnection {
   }
 
   /**
-   * Gets the server version.
+   * {@inheritdoc}
    *
-   * @return string
-   *   The PDO server version.
+   * @todo we can avoid this override if core queries the Connection instead of
+   *   the wrapped client one.
    */
   protected function getServerVersion(): string {
     if (!isset($this->serverVersion)) {
-dump($this->connection->query('SELECT VERSION()'));
-      $this->serverVersion = $this->connection->query('SELECT VERSION()')->fetchColumn();
+      $this->serverVersion = $this->query('SELECT VERSION()')->fetchField();
     }
     return $this->serverVersion;
-  }
-
-  public function query($query, array $args = [], $options = []) {
-    assert(is_string($query), 'The \'$query\' argument to ' . __METHOD__ . '() must be a string');
-
-    // Use default values if not already set.
-    $options += $this->defaultOptions();
-
-    if (isset($options['return'])) {
-      @trigger_error('Passing "return" option to ' . __METHOD__ . '() is deprecated in drupal:9.4.0 and is removed in drupal:11.0.0. For data manipulation operations, use dynamic queries instead. See https://www.drupal.org/node/3185520', E_USER_DEPRECATED);
-    }
-
-    assert(!isset($options['target']), 'Passing "target" option to query() has no effect. See https://www.drupal.org/node/2993033');
-
-    $this->expandArguments($query, $args);
-    $stmt = $this->prepareStatement($query, $options);
-
-    try {
-      $stmt->execute($args, $options);
-
-      // Depending on the type of query we may need to return a different value.
-      // See DatabaseConnection::defaultOptions() for a description of each
-      // value.
-      switch ($options['return'] ?? Database::RETURN_STATEMENT) {
-        case Database::RETURN_STATEMENT:
-          return $stmt;
-
-        // Database::RETURN_AFFECTED should not be used; enable row counting
-        // by passing the appropriate argument to the constructor instead.
-        // @see https://www.drupal.org/node/3186368
-        case Database::RETURN_AFFECTED:
-          $stmt->allowRowCount = TRUE;
-          return $stmt->rowCount();
-
-        case Database::RETURN_INSERT_ID:
-          $sequence_name = $options['sequence_name'] ?? NULL;
-          return $this->connection->lastInsertId($sequence_name);
-
-        case Database::RETURN_NULL:
-          return NULL;
-
-        default:
-          throw new \PDOException('Invalid return directive: ' . $options['return']);
-
-      }
-    }
-    catch (\Exception $e) {
-      $this->exceptionHandler()->handleExecutionException($e, $stmt, $args, $options);
-    }
   }
 
 }

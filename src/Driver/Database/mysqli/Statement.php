@@ -137,8 +137,7 @@ class Statement extends StatementWrapper {
    * {@inheritdoc}
    */
   public function fetchField($index = 0) {
-    // Call \PDOStatement::fetchColumn to fetch the field.
-    return $this->clientStatement->fetchColumn($index);
+    return (string) $this->clientStatement->fetch_column($index);
   }
 
   /**
