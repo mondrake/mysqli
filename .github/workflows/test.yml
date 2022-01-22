@@ -1,0 +1,75 @@
+name: PHPUnit Testing
+
+on:
+  push:
+    branches: [ main ]
+
+env:
+    SIMPLETEST_BASE_URL: "http://localhost:8080"
+    BROWSERTEST_OUTPUT_DIRECTORY: "sites/default/files/simpletest"
+    MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu","--headless", "--no-sandbox"]}}, "http://localhost:4444"]'
+
+jobs:
+
+#################################
+
+  mysqli:
+    name: "Test mysqli"
+    runs-on: ubuntu-20.04
+    env:
+        SIMPLETEST_DB: "mysqli://root:@0.0.0.0/drupal_db#d8t"
+
+    strategy:
+      matrix:
+        php-version:
+#          - "8.0"
+          - "8.1"
+
+    services:
+      mysql:
+        image: "mysql:5.7"
+        options: >-
+          -e MYSQL_ALLOW_EMPTY_PASSWORD=yes
+          -e MYSQL_DATABASE=drupal_db
+        ports:
+          - "3306:3306"
+
+    steps:
+#      - name: Install Chrome
+#        uses: "browser-actions/setup-chrome@latest"
+
+#      - name: Check Chrome version
+#        run: chrome --version
+
+#      - name: Install Chromedriver
+#        uses: "nanasess/setup-chromedriver@master"
+
+#      - name: Run Chromedriver
+#        run: chromedriver --port=4444 &
+
+      - name: Install PHP
+        uses: "shivammathur/setup-php@v2"
+        with:
+          php-version: "${{ matrix.php-version }}"
+          coverage: "none"
+          extensions: "mysqli"
+          ini-values: "zend.assertions=1"
+
+      - name: Checkout Drupal
+        run: git clone --depth=5 --branch=10.0.x http://git.drupal.org/project/drupal.git .
+
+      - name: Checkout mysqli
+        run: git clone --depth=5 --branch=main https://github.com/mondrake/mysqli.git core/modules/mysqli
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --ansi
+
+#      - name: Install Drupal
+#        run: |
+#          vendor/bin/drush site-install standard --db-url=$SIMPLETEST_DB -y
+#          vendor/bin/drush rq
+#          vendor/bin/drush runserver localhost:8080 --default-server=localhost:8080 &
+#          mkdir -p sites/default/files/simpletest
+
+      - name: Run tests
+        run: vendor/bin/phpunit -v -c core --color=always --group Database
