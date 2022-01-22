@@ -31,6 +31,25 @@ class Statement extends StatementWrapper {
   protected array $paramsPositions;
 
   /**
+   * The default fetch mode.
+   *
+   * See http://php.net/manual/pdo.constants.php for the definition of the
+   * constants used.
+   *
+   * @var int
+   */
+  protected int $defaultFetchMode;
+
+  /**
+   * The class to be used for returning row results.
+   *
+   * Used when fetch mode is \PDO::FETCH_CLASS.
+   *
+   * @var string
+   */
+  protected string $fetchClass;
+
+  /**
    * Constructs a Statement object.
    *
    * @param \Drupal\Core\Database\Connection $connection
@@ -130,20 +149,11 @@ class Statement extends StatementWrapper {
    * {@inheritdoc}
    */
   public function setFetchMode($mode, $a1 = NULL, $a2 = []) {
-    // Call \PDOStatement::setFetchMode to set fetch mode.
-    // \PDOStatement is picky about the number of arguments in some cases so we
-    // need to be pass the exact number of arguments we where given.
-    switch (func_num_args()) {
-      case 1:
-        return $this->clientStatement->setFetchMode($mode);
-
-      case 2:
-        return $this->clientStatement->setFetchMode($mode, $a1);
-
-      case 3:
-      default:
-        return $this->clientStatement->setFetchMode($mode, $a1, $a2);
+    $this->defaultFetchMode = $mode;
+    if ($mode === \PDO::FETCH_CLASS) {
+      $this->fetchClass = $a1;
     }
+    return TRUE;
   }
 
   /**
