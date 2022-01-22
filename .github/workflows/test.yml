@@ -17,7 +17,7 @@ jobs:
     name: "Test mysqli"
     runs-on: ubuntu-20.04
     env:
-        SIMPLETEST_DB: "mysqli://root:@0.0.0.0/drupal_db#d8t"
+        SIMPLETEST_DB: "mysqli://root:@0.0.0.0/drupal_db?module=mysqli#d10t"
 
     strategy:
       matrix:
@@ -59,7 +59,7 @@ jobs:
         run: git clone --depth=5 --branch=10.0.x http://git.drupal.org/project/drupal.git .
 
       - name: Checkout mysqli
-        run: git clone --depth=5 --branch=main https://github.com/mondrake/mysqli.git modules/contrib/mysqli
+        run: git clone --depth=5 --branch=main https://github.com/mondrake/mysqli.git core/modules/mysqli
 
       - name: Install Composer dependencies
         run: composer install --no-progress --ansi
