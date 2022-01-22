@@ -7,7 +7,7 @@ use Drupal\mysql\Driver\Database\mysql\Install\Tasks as BaseInstallTasks;
 /**
  * Specifies installation tasks for MySQLi.
  */
-class Tasks extends InstallTasks {
+class Tasks extends BaseInstallTasks {
 
   /**
    * {@inheritdoc}
