@@ -207,7 +207,7 @@ class Connection extends BaseConnection {
    *   The PDO server version.
    */
   protected function getServerVersion(): string {
-    if (!$this->serverVersion) {
+    if (!isset($this->serverVersion)) {
       $this->serverVersion = $this->connection->query('SELECT VERSION()')->fetchColumn();
     }
     return $this->serverVersion;
