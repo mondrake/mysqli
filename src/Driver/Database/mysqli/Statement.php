@@ -76,10 +76,28 @@ class Statement extends StatementWrapper {
    * {@inheritdoc}
    */
   public function execute($args = [], $options = []) {
-    $this->paramsPositions = array_flip(array_keys($args));
-    [$query, $args] = $this->connection->convertNamedPlaceholdersToPositional($this->queryString, $args);
-    $this->queryString = $query;
-    $this->clientStatement = $this->mysqliConnection->prepare($this->queryString);
+    // Prepare the lower-level statement if it's not been prepared already.
+    if (!$this->clientStatement) {
+      // Replace named placeholders with positional ones if needed.
+      $this->paramsPositions = array_flip(array_keys($args));
+      [$query, $args] = $this->connection->convertNamedPlaceholdersToPositional($this->queryString, $args);
+      $this->queryString = $query;
+
+      try {
+        $this->clientStatement = $this->mysqliConnection->prepare($this->queryString);
+      }
+      catch (\mysqli_sql_exception $e) {
+        throw new DatabaseExceptionWrapper($e->getMessage(), $e->getCode(), $e);
+      }
+    }
+    else {
+      // Transform the $args to positional.
+      $tmp = [];
+      foreach ($this->paramsPositions as $param => $pos) {
+        $tmp[$pos] = $args[$param];
+      }
+      $args = $tmp;
+    }
 
     if (isset($options['fetch'])) {
       if (is_string($options['fetch'])) {
@@ -98,7 +116,7 @@ class Statement extends StatementWrapper {
     }
 
     $return = $this->clientStatement->execute($args);
-
+dump([$this->queryString, $args, $return]);
     if (!empty($logger)) {
       $query_end = microtime(TRUE);
       $logger->log($this, $args, $query_end - $query_start, $query_start);
