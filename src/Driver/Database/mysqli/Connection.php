@@ -182,7 +182,14 @@ class Connection extends BaseConnection {
    * {@inheritdoc}
    */
   public function quote($string, $parameter_type = \PDO::PARAM_STR) {
-    return "'" . $this->connection->escape_string($string) ."'";
+    return "'" . $this->connection->escape_string($string) . "'";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function lastInsertId(?string $name = NULL): string {
+    return $this->connection->insert_id;
   }
 
   /**
