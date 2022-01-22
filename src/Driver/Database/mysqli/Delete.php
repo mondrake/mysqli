@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\mysql\Driver\Database\mysql;
+namespace Drupal\mysqli\Driver\Database\mysqli;
 
 use Drupal\mysql\Driver\Database\mysql\Delete as BaseDelete;
 
