@@ -57,6 +57,7 @@ class Connection extends BaseConnection {
     if ($this->identifierQuotes === ['"', '"'] && !$is_ansi_quotes_mode) {
       $this->identifierQuotes = ['`', '`'];
     }
+    $this->identifierQuotes = ['`', '`'];
 
     // Manage the table prefix.
     $connection_options['prefix'] = $connection_options['prefix'] ?? '';
