@@ -178,6 +178,13 @@ class Connection extends BaseConnection {
   }
 
   /**
+   * {@inheritdoc}
+   */
+  public function quote($string, $parameter_type = \PDO::PARAM_STR) {
+    return $this->connection->escape_string($string);
+  }
+
+  /**
    * @todo
    */
   public function convertNamedPlaceholdersToPositional(string $sql, array $args): array {
