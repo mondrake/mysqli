@@ -72,5 +72,5 @@ jobs:
 #          mkdir -p sites/default/files/simpletest
 
       - name: Run tests
-        run: vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/ConnectionUnitTest.php
-#        run: vendor/bin/phpunit -v -c core --color=always --group Database
+        run: vendor/bin/phpunit -v -c core --color=always --group Database
+#        run: vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/ConnectionUnitTest.php
