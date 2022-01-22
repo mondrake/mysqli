@@ -59,7 +59,7 @@ jobs:
         run: git clone --depth=5 --branch=10.0.x http://git.drupal.org/project/drupal.git .
 
       - name: Checkout mysqli
-        run: git clone --depth=5 --branch=main https://github.com/mondrake/mysqli.git core/modules/mysqli
+        run: git clone --depth=5 --branch=main https://github.com/mondrake/mysqli.git modules/contrib/mysqli
 
       - name: Install Composer dependencies
         run: composer install --no-progress --ansi
