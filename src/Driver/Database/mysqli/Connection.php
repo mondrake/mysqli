@@ -3,11 +3,20 @@
 namespace Drupal\mysqli\Driver\Database\mysqli;
 
 use Drupal\mysql\Driver\Database\mysql\Connection as BaseConnection;
+use Drupal\mysqli\Driver\Database\mysqli\Parser\Parser;
+use Drupal\mysqli\Driver\Database\mysqli\Parser\Visitor;
 
 /**
  * MySQLi implementation of \Drupal\Core\Database\Connection.
  */
 class Connection extends BaseConnection {
+
+  /**
+   * The SQL parser.
+   *
+   * @todo
+   */
+  protected Parser $parser;
 
   /**
    * {@inheritdoc}
@@ -158,6 +167,29 @@ class Connection extends BaseConnection {
    */
   public function clientVersion() {
     return \mysqli_get_client_info();
+  }
+
+  /**
+   * @todo
+   */
+  public function convertNamedPlaceholdersToPositional(string $sql, array $args): array {
+    if ($this->parser === null) {
+      $this->parser = new Parser();
+    }
+
+    $pms = [];
+    foreach($args as $k => $v) {
+      $pms[substr($k, 1)] = $v;
+    }
+
+    $visitor = new Visitor($pms);
+
+    $this->parser->parse($sql, $visitor);
+
+    return [
+      $visitor->getSQL(),
+      $visitor->getParameters(),
+    ];
   }
 
 }

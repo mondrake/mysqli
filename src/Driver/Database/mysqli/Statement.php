@@ -10,6 +10,27 @@ use Drupal\Core\Database\StatementWrapper;
 class Statement extends StatementWrapper {
 
   /**
+   * The mysqli client connection.
+   *
+   * @var \mysqli
+   */
+  protected \mysqli $mysqliConnection;
+
+  /**
+   * Holds supplementary driver options.
+   *
+   * @var array
+   */
+  protected array $driverOpts;
+
+  /**
+   * Holds the index position of named parameters.
+   *
+   * @var array
+   */
+  protected array $paramsPositions;
+
+  /**
    * Constructs a Statement object.
    *
    * @param \Drupal\Core\Database\Connection $connection
@@ -19,21 +40,28 @@ class Statement extends StatementWrapper {
    * @param string $query
    *   The SQL query string.
    * @param array $options
-   *   Array of query options.
+   *   (optional) Array of query options.
    * @param bool $row_count_enabled
    *   (optional) Enables counting the rows affected. Defaults to FALSE.
    */
-  public function __construct(Connection $connection, \mysqli $client_connection, string $query, array $options, bool $row_count_enabled = FALSE) {
+  public function __construct(Connection $connection, \mysqli $client_connection, string $query, array $driver_options = [], bool $row_count_enabled = FALSE) {
     $this->connection = $connection;
-    $this->clientStatement = $client_connection->prepare($query, $options);
+    $this->mysqliConnection = $client_connection;
     $this->rowCountEnabled = $row_count_enabled;
+    $this->queryString = $query;
     $this->setFetchMode(\PDO::FETCH_OBJ);
+    $this->driverOpts = $driver_options;
   }
 
   /**
    * {@inheritdoc}
    */
   public function execute($args = [], $options = []) {
+    $this->paramsPositions = array_flip(array_keys($args));
+    [$query, $args] = $this->connection->convertNamedPlaceholdersToPositional($this->queryString, $args);
+    $this->queryString = $query;
+    $this->clientStatement = $this->mysqliConnection->prepare($this->queryString);
+
     if (isset($options['fetch'])) {
       if (is_string($options['fetch'])) {
         // \PDO::FETCH_PROPS_LATE tells __construct() to run before properties
