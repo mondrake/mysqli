@@ -196,22 +196,53 @@ class Statement extends StatementWrapper {
    * {@inheritdoc}
    */
   public function fetch($mode = NULL, $cursor_orientation = NULL, $cursor_offset = NULL) {
-    // Call \PDOStatement::fetchAll to fetch all rows.
-    // \PDOStatement is picky about the number of arguments in some cases so we
-    // need to be pass the exact number of arguments we where given.
-    switch (func_num_args()) {
-      case 0:
-        return $this->clientStatement->fetch();
+    if (is_string($mode)) {
+      $this->setFetchMode(\PDO::FETCH_CLASS, $mode);
+      $mode = \PDO::FETCH_CLASS;
+    }
+    else {
+      $mode = $mode ?: $this->defaultFetchMode;
+    }
 
-      case 1:
-        return $this->clientStatement->fetch($mode);
+    $mysqli_row = $this->mysqliResult->fetch_assoc();
+    if (!$mysqli_row) {
+      return FALSE;
+    }
+    $row = [];
+    foreach ($mysqli_row as $column => $value) {
+      $row[$column] = $value === NULL ? NULL : (string) $value;
+    }
+    switch ($mode) {
+      case \PDO::FETCH_ASSOC:
+        return $row;
 
-      case 2:
-        return $this->clientStatement->fetch($mode, $cursor_orientation);
+      case \PDO::FETCH_NUM:
+        return array_values($row);
 
-      case 3:
+      case \PDO::FETCH_BOTH:
+        return $row + array_values($row);
+
+      case \PDO::FETCH_OBJ:
+        return (object) $row;
+
+      case \PDO::FETCH_CLASS:
+        $constructor_arguments = $this->fetchOptions['constructor_args'] ?? [];
+        $class_obj = new $this->fetchClass(...$constructor_arguments);
+        foreach ($row as $column => $value) {
+          $class_obj->$column = $value;
+        }
+        return $class_obj;
+
+      case \PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE:
+        $class = array_shift($row);
+        $class_obj = new $class();
+        foreach ($row as $column => $value) {
+          $class_obj->$column = $value;
+        }
+        return $class_obj;
+
       default:
-        return $this->clientStatement->fetch($mode, $cursor_orientation, $cursor_offset);
+          throw new DatabaseExceptionWrapper("Unknown fetch type '{$mode}'");
     }
   }
 
@@ -219,23 +250,31 @@ class Statement extends StatementWrapper {
    * {@inheritdoc}
    */
   public function fetchAll($mode = NULL, $column_index = NULL, $constructor_arguments = NULL) {
-    // Call \PDOStatement::fetchAll to fetch all rows.
-    // \PDOStatement is picky about the number of arguments in some cases so we
-    // need to be pass the exact number of arguments we where given.
-    switch (func_num_args()) {
-      case 0:
-        return $this->clientStatement->fetchAll();
-
-      case 1:
-        return $this->clientStatement->fetchAll($mode);
-
-      case 2:
-        return $this->clientStatement->fetchAll($mode, $column_index);
-
-      case 3:
-      default:
-        return $this->clientStatement->fetchAll($mode, $column_index, $constructor_arguments);
+    if (is_string($mode)) {
+      $this->setFetchMode(\PDO::FETCH_CLASS, $mode);
+      $mode = \PDO::FETCH_CLASS;
     }
+    else {
+      $mode = $mode ?: $this->defaultFetchMode;
+    }
+
+    $rows = [];
+    if (\PDO::FETCH_COLUMN == $mode) {
+      if ($column_index === NULL) {
+        $column_index = 0;
+      }
+      while (($record = $this->fetch(\PDO::FETCH_ASSOC)) !== FALSE) {
+        $cols = array_keys($record);
+        $rows[] = $record[$cols[$column_index]];
+      }
+    }
+    else {
+      while (($row = $this->fetch($mode)) !== FALSE) {
+        $rows[] = $row;
+      }
+    }
+
+    return $rows;
   }
 
 }
