@@ -18,6 +18,13 @@ class Statement extends StatementWrapper {
   protected \mysqli $mysqliConnection;
 
   /**
+   * The query string, in its form with placeholders.
+   *
+   * @var string
+   */
+  protected string $queryString;
+
+  /**
    * Holds supplementary driver options.
    *
    * @var array
@@ -49,6 +56,15 @@ class Statement extends StatementWrapper {
    * @var string
    */
   protected string $fetchClass;
+
+  /**
+   * The mysqli result object.
+   *
+   * Stores results of a data selection query.
+   *
+   * @var \mysqli_result|null
+   */
+  protected ?\mysqli_result $mysqliResult;
 
   /**
    * Constructs a Statement object.
@@ -117,7 +133,9 @@ class Statement extends StatementWrapper {
     }
 
     $return = $this->clientStatement->execute($args);
-
+    $result = $this->clientStatement->get_result();
+    $this->mysqliResult = $result !== FALSE ? $result : NULL;
+    
     if (!empty($logger)) {
       $query_end = microtime(TRUE);
       $logger->log($this, $args, $query_end - $query_start, $query_start);
