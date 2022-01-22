@@ -17,7 +17,7 @@ class ExceptionHandler extends BaseExceptionHandler {
    * {@inheritdoc}
    */
   public function handleExecutionException(\Exception $exception, StatementInterface $statement, array $arguments = [], array $options = []): void {
-    if ($exception instanceof \PDOException) {
+    if ($exception instanceof \mysqli_sql_exception) {
       // Wrap the exception in another exception, because PHP does not allow
       // overriding Exception::getMessage(). Its message is the extra database
       // debug information.
@@ -32,7 +32,7 @@ class ExceptionHandler extends BaseExceptionHandler {
       }
 
       $message = $exception->getMessage() . ": " . $statement->getQueryString() . "; " . print_r($arguments, TRUE);
-
+dump($message);
       // SQLSTATE 23xxx errors indicate an integrity constraint violation. Also,
       // in case of attempted INSERT of a record with an undefined column and no
       // default value indicated in schema, MySql returns a 1364 error code.

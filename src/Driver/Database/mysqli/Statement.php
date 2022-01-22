@@ -126,7 +126,7 @@ class Statement extends StatementWrapper {
     }
 
     $return = $this->clientStatement->execute($args);
-dump(['sql' => $this->queryString, 'args' => $args, 'return' => $return]);
+// dump(['sql' => $this->queryString, 'args' => $args, 'return' => $return]);
     $result = $this->clientStatement->get_result();
     $this->mysqliResult = $result !== FALSE ? $result : NULL;
 
