@@ -97,15 +97,8 @@ class Statement extends StatementWrapper {
     if (!$this->clientStatement) {
       // Replace named placeholders with positional ones if needed.
       $this->paramsPositions = array_flip(array_keys($args));
-      [$query, $args] = $this->connection->convertNamedPlaceholdersToPositional($this->queryString, $args);
-      $this->queryString = $query;
-
-      try {
-        $this->clientStatement = $this->mysqliConnection->prepare($this->queryString);
-      }
-      catch (\mysqli_sql_exception $e) {
-        throw new DatabaseExceptionWrapper($e->getMessage(), $e->getCode(), $e);
-      }
+      [$this->queryString, $args] = $this->connection->convertNamedPlaceholdersToPositional($this->queryString, $args);
+      $this->clientStatement = $this->mysqliConnection->prepare($this->queryString);
     }
     else {
       // Transform the $args to positional.
