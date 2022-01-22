@@ -135,7 +135,7 @@ class Statement extends StatementWrapper {
     $return = $this->clientStatement->execute($args);
     $result = $this->clientStatement->get_result();
     $this->mysqliResult = $result !== FALSE ? $result : NULL;
-    
+
     if (!empty($logger)) {
       $query_end = microtime(TRUE);
       $logger->log($this, $args, $query_end - $query_start, $query_start);
@@ -148,14 +148,14 @@ class Statement extends StatementWrapper {
    * {@inheritdoc}
    */
   public function getQueryString() {
-    return $this->clientStatement->queryString;
+    return $this->queryString;
   }
 
   /**
    * {@inheritdoc}
    */
   public function fetchField($index = 0) {
-    return (string) $this->clientStatement->fetch_column($index);
+    return (string) $this->mysqliResult->fetch_column($index);
   }
 
   /**
