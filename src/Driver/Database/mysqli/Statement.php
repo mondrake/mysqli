@@ -2,6 +2,7 @@
 
 namespace Drupal\mysqli\Driver\Database\mysqli;
 
+use Drupal\Core\Database\DatabaseExceptionWrapper;
 use Drupal\Core\Database\StatementWrapper;
 
 /**
@@ -116,7 +117,7 @@ class Statement extends StatementWrapper {
     }
 
     $return = $this->clientStatement->execute($args);
-dump([$this->queryString, $args, $return]);
+
     if (!empty($logger)) {
       $query_end = microtime(TRUE);
       $logger->log($this, $args, $query_end - $query_start, $query_start);
