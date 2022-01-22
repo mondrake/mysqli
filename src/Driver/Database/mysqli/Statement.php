@@ -3,6 +3,7 @@
 namespace Drupal\mysqli\Driver\Database\mysqli;
 
 use Drupal\Core\Database\DatabaseExceptionWrapper;
+use Drupal\Core\Database\RowCountException;
 use Drupal\Core\Database\StatementWrapper;
 
 /**
@@ -168,7 +169,13 @@ class Statement extends StatementWrapper {
   public function rowCount() {
     // SELECT query should not use the method.
     if ($this->rowCountEnabled) {
-      return $this->clientStatement->rowCount();
+      if ($this->mysqliConnection->info === NULL) {
+        return $this->mysqliResult->num_rows;
+      }
+      else {
+        [$matched] = sscanf($this->mysqliConnection->info, "Rows matched: %d Changed: %d Warnings: %d");
+        return $matched;
+      }
     }
     else {
       throw new RowCountException();
