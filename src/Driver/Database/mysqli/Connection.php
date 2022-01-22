@@ -116,10 +116,10 @@ class Connection extends BaseConnection {
     // 'utf8mb4_general_ci' (MySQL 5) or 'utf8mb4_0900_ai_ci' (MySQL 8) for
     // utf8mb4.
     if (!empty($connection_options['collation'])) {
-      $mysqli->exec('SET NAMES ' . $charset . ' COLLATE ' . $connection_options['collation']);
+      $mysqli->query('SET NAMES ' . $charset . ' COLLATE ' . $connection_options['collation']);
     }
     else {
-      $mysqli->exec('SET NAMES ' . $charset);
+      $mysqli->query('SET NAMES ' . $charset);
     }
 
     // Set MySQL init_commands if not already defined.  Default Drupal's MySQL
@@ -140,7 +140,7 @@ class Connection extends BaseConnection {
 
     // Execute initial commands.
     foreach ($connection_options['init_commands'] as $sql) {
-      $mysqli->exec($sql);
+      $mysqli->query($sql);
     }
 
     return $mysqli;
