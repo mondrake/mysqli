@@ -174,7 +174,7 @@ class Connection extends BaseConnection {
    */
   public function convertNamedPlaceholdersToPositional(string $sql, array $args): array {
     if (!isset($this->parser)) {
-      $this->parser = new Parser();
+      $this->parser = new Parser(FALSE);
     }
 
     $pms = [];
