@@ -208,6 +208,7 @@ class Connection extends BaseConnection {
    */
   protected function getServerVersion(): string {
     if (!isset($this->serverVersion)) {
+dump($this->connection->query('SELECT VERSION()'));
       $this->serverVersion = $this->connection->query('SELECT VERSION()')->fetchColumn();
     }
     return $this->serverVersion;
@@ -229,9 +230,7 @@ class Connection extends BaseConnection {
     $stmt = $this->prepareStatement($query, $options);
 
     try {
-dump([$query, $args]);
       $stmt->execute($args, $options);
-dump([$stmt]);
 
       // Depending on the type of query we may need to return a different value.
       // See DatabaseConnection::defaultOptions() for a description of each
