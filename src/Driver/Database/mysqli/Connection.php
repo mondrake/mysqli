@@ -203,7 +203,7 @@ class Connection extends BaseMySqlConnection {
     // If we're already in a transaction then we want to create a savepoint
     // rather than try to create another transaction.
     if ($this->inTransaction()) {
-      $this->query('SAVEPOINT ' . $name);
+      $this->connection->savepoint($name);
     }
     else {
       $this->connection->begin_transaction(0, $name);

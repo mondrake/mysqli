@@ -62,15 +62,18 @@ jobs:
         run: git clone --depth=5 --branch=main https://github.com/mondrake/mysqli.git core/modules/mysqli
 
       - name: Install Composer dependencies
-        run: composer install --no-progress --ansi
+        run: |
+          composer install --no-progress --ansi
+          composer require drush/drush --no-progress --ansi
 
 #      - name: Install Drupal
+#        continue-on-error: true
 #        run: |
-#          vendor/bin/drush site-install standard --db-url=$SIMPLETEST_DB -y
-#          vendor/bin/drush rq
-#          vendor/bin/drush runserver localhost:8080 --default-server=localhost:8080 &
 #          mkdir -p sites/default/files/simpletest
+#          vendor/bin/drush rq
+#          vendor/bin/drush site-install standard --db-url=$SIMPLETEST_DB -y
+#          vendor/bin/drush runserver localhost:8080 --default-server=localhost:8080 &
 
       - name: Run tests
-        run: vendor/bin/phpunit -c core --color=always --group Database
-#        run: vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/ConnectionUnitTest.php
+        run: vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/InsertTest.php
+#        run: vendor/bin/phpunit -c core --color=always --group Database
