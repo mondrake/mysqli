@@ -15,6 +15,9 @@ class ExceptionHandler extends BaseExceptionHandler {
 
   /**
    * {@inheritdoc}
+   *
+   * @todo note that mysqli_sql_exception::getSqlState() is only available as
+   *   of PHP 8.1.2.
    */
   public function handleExecutionException(\Exception $exception, StatementInterface $statement, array $arguments = [], array $options = []): void {
 //dump([$exception, $statement, $arguments, $options]);
@@ -38,7 +41,7 @@ class ExceptionHandler extends BaseExceptionHandler {
       // in case of attempted INSERT of a record with an undefined column and no
       // default value indicated in schema, MySql returns a 1364 error code.
       if (
-        substr($exception->getSqlState(), -6, -3) == '23' ||
+        substr($statement->getSqlState(), -6, -3) == '23' ||
         $code === 1364
       ) {
         throw new IntegrityConstraintViolationException($message, $code, $exception);
