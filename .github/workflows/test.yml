@@ -19,7 +19,7 @@ jobs:
     name: "Test mysqli"
     runs-on: ubuntu-20.04
     env:
-        SIMPLETEST_DB: "mysqli://root:@0.0.0.0/drupal_db?module=mysqli#d10t"
+        SIMPLETEST_DB: "mysqli://roxxxot:@0.0.0.0/drupal_db?module=mysqli#d10t"
 
     strategy:
       matrix:
@@ -71,18 +71,18 @@ jobs:
           composer install --no-progress --ansi
           composer require drush/drush --no-progress --ansi
 
-      - name: Install Drupal
-        continue-on-error: true
-        run: |
-          # Use a custom installer.
-          cp core/modules/mysqli/tests/github/install_* .
-          php install_cli.php
-          # Report Drupal installation via Drush.
-          vendor/bin/drush rq
-          # Spin a test webserver.
-          mkdir -p sites/default/files/simpletest
-          vendor/bin/drush runserver localhost:8080 --default-server=localhost:8080 &
-          sleep 1s
+#      - name: Install Drupal
+#        continue-on-error: true
+#        run: |
+#          # Use a custom installer.
+#          cp core/modules/mysqli/tests/github/install_* .
+#          php install_cli.php
+#          # Report Drupal installation via Drush.
+#          vendor/bin/drush rq
+#          # Spin a test webserver.
+#          mkdir -p sites/default/files/simpletest
+#          vendor/bin/drush runserver localhost:8080 --default-server=localhost:8080 &
+#          sleep 1s
 
       - name: Run tests
         run: vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/InsertTest.php
