@@ -61,6 +61,9 @@ jobs:
       - name: Checkout mysqli
         run: git clone --depth=5 --branch=main https://github.com/mondrake/mysqli.git core/modules/mysqli
 
+      - name: Patch Drupal
+        run: ./core/modules/mysqli/tests/github/drupal_patch.sh
+
       - name: Install Composer dependencies
         run: |
           composer install --no-progress --ansi
