@@ -100,7 +100,9 @@ class Connection extends BaseMySqlConnection {
         $connection_options['port'] ?? 3306,
         $connection_options['unix_socket'] ?? ''
       );
-      $mysqli->set_charset($charset);
+      if (!$mysqli->set_charset($charset)) {
+        throw new InvalidCharsetException('Invalid charset ' . $charset);
+      }
     }
     catch (\mysqli_sql_exception $e) {
       if ($e->getCode() == static::DATABASE_NOT_FOUND) {
