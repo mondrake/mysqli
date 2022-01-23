@@ -309,7 +309,7 @@ class Statement extends StatementWrapper {
         return $this->mysqliResult->num_rows;
       }
       else {
-        [$matched] = sscanf($this->mysqliConnection->info, "Rows matched: %d Changed: %d Warnings: %d");
+        [$matched] = sscanf($this->mysqliConnection->info ?? '', "Rows matched: %d Changed: %d Warnings: %d");
         return $matched;
       }
     }

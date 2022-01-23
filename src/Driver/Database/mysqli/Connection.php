@@ -214,6 +214,54 @@ class Connection extends BaseMySqlConnection {
   /**
    * {@inheritdoc}
    *
+   * mysqli does not support query('RELEASE SAVEPOINT ' . $name), we
+   * need to use direct rollback on the connection.
+   */
+  protected function popCommittableTransactions() {
+    // Commit all the committable layers.
+    foreach (array_reverse($this->transactionLayers) as $name => $active) {
+      // Stop once we found an active transaction.
+      if ($active) {
+        break;
+      }
+
+      // If there are no more layers left then we should commit.
+      unset($this->transactionLayers[$name]);
+      if (empty($this->transactionLayers)) {
+        $this->doCommit();
+      }
+      else {
+        // Attempt to release this savepoint in the standard way.
+        try {
+          $this->connection->release_savepoint($name);
+        }
+        catch (\mysqli_sql_exception $e) {
+          // However, in MySQL (InnoDB), savepoints are automatically committed
+          // when tables are altered or created (DDL transactions are not
+          // supported). This can cause exceptions due to trying to release
+          // savepoints which no longer exist.
+          //
+          // To avoid exceptions when no actual error has occurred, we silently
+          // succeed for MySQL error code 1305 ("SAVEPOINT does not exist").
+          if ($e->getPrevious()->getCode() == '1305') {
+            // If one SAVEPOINT was released automatically, then all were.
+            // Therefore, clean the transaction stack.
+            $this->transactionLayers = [];
+            // We also have to explain to PDO that the transaction stack has
+            // been cleaned-up.
+            $this->doCommit();
+          }
+          else {
+            throw $e;
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   *
    * mysqli does not support query('ROLLBACK TO SAVEPOINT ' . $savepoint), we
    * need to use direct rollback on the connection.
    */
