@@ -16,6 +16,13 @@ class Tasks extends BaseInstallTasks {
   /**
    * {@inheritdoc}
    */
+  public function installable() {
+    return extension_loaded('mysqli');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function name() {
     return $this->t('@parent via mysqli', ['@parent' => parent::name()]);
   }

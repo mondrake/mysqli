@@ -213,9 +213,55 @@ class Connection extends BaseMySqlConnection {
 
   /**
    * {@inheritdoc}
+   *
+   * mysqli does not support query('ROLLBACK TO SAVEPOINT ' . $savepoint), we
+   * need to use direct rollback on the connection.
    */
   public function rollBack($savepoint_name = 'drupal_transaction') {
-    return BaseConnection::rollBack($savepoint_name);
+    if (!$this->inTransaction()) {
+      throw new TransactionNoActiveException();
+    }
+    // A previous rollback to an earlier savepoint may mean that the savepoint
+    // in question has already been accidentally committed.
+    if (!isset($this->transactionLayers[$savepoint_name])) {
+      throw new TransactionNoActiveException();
+    }
+
+    // We need to find the point we're rolling back to, all other savepoints
+    // before are no longer needed. If we rolled back other active savepoints,
+    // we need to throw an exception.
+    $rolled_back_other_active_savepoints = FALSE;
+    while ($savepoint = array_pop($this->transactionLayers)) {
+      if ($savepoint == $savepoint_name) {
+        // If it is the last the transaction in the stack, then it is not a
+        // savepoint, it is the transaction itself so we will need to roll back
+        // the transaction rather than a savepoint.
+        if (empty($this->transactionLayers)) {
+          break;
+        }
+        $this->connection->rollback(0, $savepoint);
+        $this->popCommittableTransactions();
+        if ($rolled_back_other_active_savepoints) {
+          throw new TransactionOutOfOrderException();
+        }
+        return;
+      }
+      else {
+        $rolled_back_other_active_savepoints = TRUE;
+      }
+    }
+
+    // Notify the callbacks about the rollback.
+    $callbacks = $this->rootTransactionEndCallbacks;
+    $this->rootTransactionEndCallbacks = [];
+    foreach ($callbacks as $callback) {
+      call_user_func($callback, FALSE);
+    }
+
+    $this->connection->rollBack();
+    if ($rolled_back_other_active_savepoints) {
+      throw new TransactionOutOfOrderException();
+    }
   }
 
   /**
