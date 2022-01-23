@@ -87,5 +87,5 @@ jobs:
           sleep 1s
 
       - name: Run tests
-        run: vendor/bin/phpunit -c core --color=always --group Database
-#        run: vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/InsertTest.php
+        run: vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/DeleteTruncateTest.php
+#        run: vendor/bin/phpunit -c core --color=always --group Database
