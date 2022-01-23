@@ -146,7 +146,7 @@ class Statement extends StatementWrapper {
    * mysqli_sql_exception.
    */
   public function getSqlState() {
-    return $this->clientStatement->sqlstate;
+    return $this->clientStatement ? $this->clientStatement->sqlstate : '00000';
   }
 
   /**

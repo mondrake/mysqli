@@ -26,8 +26,12 @@ $settings = [
     'install_settings_form' => [
       'driver' => 'mysqli',
       'dbal' => [
-        'prefix' => 'dru',
-        'dbal_url' => getenv("DBAL_URL"),
+        'database' => 'drupal_db',
+        'username' => 'root',
+        'password' => '',
+        'host' => '0.0.0.0',
+        'port' => 3306,
+        'prefix' => 'd10t',
       ],
     ],
     'install_configure_form' => [
