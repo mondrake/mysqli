@@ -58,7 +58,6 @@ class Connection extends BaseMySqlConnection {
     if ($this->identifierQuotes === ['"', '"'] && !$is_ansi_quotes_mode) {
       $this->identifierQuotes = ['`', '`'];
     }
-    $this->identifierQuotes = ['`', '`'];
 
     // Manage the table prefix.
     $connection_options['prefix'] = $connection_options['prefix'] ?? '';
@@ -86,27 +85,10 @@ class Connection extends BaseMySqlConnection {
     else {
       $charset = 'utf8mb4';
     }
+
     // Allow PDO options to be overridden.
     $connection_options += [
       'pdo' => [],
-    ];
-    $connection_options['pdo'] += [
-      \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-      // So we don't have to mess around with cursors and unbuffered queries by default.
-      \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => TRUE,
-      // Make sure MySQL returns all matched rows on update queries including
-      // rows that actually didn't have to be updated because the values didn't
-      // change. This matches common behavior among other database systems.
-      \PDO::MYSQL_ATTR_FOUND_ROWS => TRUE,
-      // Because MySQL's prepared statements skip the query cache, because it's dumb.
-      \PDO::ATTR_EMULATE_PREPARES => TRUE,
-      // Limit SQL to a single statement like mysqli.
-      \PDO::MYSQL_ATTR_MULTI_STATEMENTS => FALSE,
-      // Convert numeric values to strings when fetching. In PHP 8.1,
-      // \PDO::ATTR_EMULATE_PREPARES now behaves the same way as non emulated
-      // prepares and returns integers. See https://externals.io/message/113294
-      // for further discussion.
-      \PDO::ATTR_STRINGIFY_FETCHES => TRUE,
     ];
 
     try {
@@ -118,9 +100,11 @@ class Connection extends BaseMySqlConnection {
         $connection_options['port'] ?? 3306,
         $connection_options['unix_socket'] ?? ''
       );
-      $mysqli->set_charset($charset);
+      if (!$mysqli->set_charset($charset)) {
+        throw new InvalidCharsetException('Invalid charset ' . $charset);
+      }
     }
-    catch (\PDOException $e) {
+    catch (\mysqli_sql_exception $e) {
       if ($e->getCode() == static::DATABASE_NOT_FOUND) {
         throw new DatabaseNotFoundException($e->getMessage(), $e->getCode(), $e);
       }
@@ -361,74 +345,6 @@ class Connection extends BaseMySqlConnection {
       $visitor->getSQL(),
       $visitor->getParameters(),
     ];
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @todo we can avoid this override if core queries the Connection instead of
-   *   the wrapped client one.
-   */
-  protected function getServerVersion(): string {
-    if (!isset($this->serverVersion)) {
-      $this->serverVersion = $this->query('SELECT VERSION()')->fetchField();
-    }
-    return $this->serverVersion;
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @todo we can avoid this override if core uses the Connection lastInsertId
-   *   method.
-   */
-  public function query($query, array $args = [], $options = []) {
-    assert(is_string($query), 'The \'$query\' argument to ' . __METHOD__ . '() must be a string');
-
-    // Use default values if not already set.
-    $options += $this->defaultOptions();
-
-    if (isset($options['return'])) {
-      @trigger_error('Passing "return" option to ' . __METHOD__ . '() is deprecated in drupal:9.4.0 and is removed in drupal:11.0.0. For data manipulation operations, use dynamic queries instead. See https://www.drupal.org/node/3185520', E_USER_DEPRECATED);
-    }
-
-    assert(!isset($options['target']), 'Passing "target" option to query() has no effect. See https://www.drupal.org/node/2993033');
-
-    $this->expandArguments($query, $args);
-    $stmt = $this->prepareStatement($query, $options);
-
-    try {
-      $stmt->execute($args, $options);
-
-      // Depending on the type of query we may need to return a different value.
-      // See DatabaseConnection::defaultOptions() for a description of each
-      // value.
-      switch ($options['return'] ?? Database::RETURN_STATEMENT) {
-        case Database::RETURN_STATEMENT:
-          return $stmt;
-
-        // Database::RETURN_AFFECTED should not be used; enable row counting
-        // by passing the appropriate argument to the constructor instead.
-        // @see https://www.drupal.org/node/3186368
-        case Database::RETURN_AFFECTED:
-          $stmt->allowRowCount = TRUE;
-          return $stmt->rowCount();
-
-        case Database::RETURN_INSERT_ID:
-          $sequence_name = $options['sequence_name'] ?? NULL;
-          return $this->lastInsertId($sequence_name);
-
-        case Database::RETURN_NULL:
-          return NULL;
-
-        default:
-          throw new \PDOException('Invalid return directive: ' . $options['return']);
-
-      }
-    }
-    catch (\Exception $e) {
-      $this->exceptionHandler()->handleExecutionException($e, $stmt, $args, $options);
-    }
   }
 
 }
