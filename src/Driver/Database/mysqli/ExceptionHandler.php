@@ -20,7 +20,6 @@ class ExceptionHandler extends BaseExceptionHandler {
    *   of PHP 8.1.2.
    */
   public function handleExecutionException(\Exception $exception, StatementInterface $statement, array $arguments = [], array $options = []): void {
-//dump([$exception, $statement, $arguments, $options]);
     if ($exception instanceof \mysqli_sql_exception) {
       // Wrap the exception in another exception, because PHP does not allow
       // overriding Exception::getMessage(). Its message is the extra database
