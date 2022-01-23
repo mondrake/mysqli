@@ -2,15 +2,16 @@
 
 namespace Drupal\mysqli\Driver\Database\mysqli;
 
+use Drupal\Core\Database\Connection as BaseConnection;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Database\TransactionNameNonUniqueException;
-use Drupal\mysql\Driver\Database\mysql\Connection as BaseConnection;
+use Drupal\mysql\Driver\Database\mysql\Connection as BaseMySqlConnection;
 use Drupal\mysqli\Driver\Database\mysqli\Parser\Parser;
 use Drupal\mysqli\Driver\Database\mysqli\Parser\Visitor;
 /**
  * MySQLi implementation of \Drupal\Core\Database\Connection.
  */
-class Connection extends BaseConnection {
+class Connection extends BaseMySqlConnection {
 
   /**
    * The SQL parser.
@@ -208,6 +209,34 @@ class Connection extends BaseConnection {
       $this->connection->begin_transaction(0, $name);
     }
     $this->transactionLayers[$name] = $name;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function doCommit() {
+    // MySQL will automatically commit transactions when tables are altered or
+    // created (DDL transactions are not supported). Prevent triggering an
+    // exception in this case as all statements have been committed.
+    // mysqli does not detect if a transaction is active so we need to rely on
+    // internals.
+    if ($this->inTransaction()) {
+      $success = BaseConnection::doCommit();
+    }
+    else {
+      // Process the post-root (non-nested) transaction commit callbacks. The
+      // following code is copied from
+      // \Drupal\Core\Database\Connection::doCommit()
+      $success = TRUE;
+      if (!empty($this->rootTransactionEndCallbacks)) {
+        $callbacks = $this->rootTransactionEndCallbacks;
+        $this->rootTransactionEndCallbacks = [];
+        foreach ($callbacks as $callback) {
+          call_user_func($callback, $success);
+        }
+      }
+    }
+    return $success;
   }
 
   /**
