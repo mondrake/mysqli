@@ -17,7 +17,7 @@ class ExceptionHandler extends BaseExceptionHandler {
    * {@inheritdoc}
    */
   public function handleExecutionException(\Exception $exception, StatementInterface $statement, array $arguments = [], array $options = []): void {
-dump([$exception, $statement, $arguments, $options]);
+//dump([$exception, $statement, $arguments, $options]);
     if ($exception instanceof \mysqli_sql_exception) {
       // Wrap the exception in another exception, because PHP does not allow
       // overriding Exception::getMessage(). Its message is the extra database
@@ -27,7 +27,7 @@ dump([$exception, $statement, $arguments, $options]);
       // If a max_allowed_packet error occurs the message length is truncated.
       // This should prevent the error from recurring if the exception is logged
       // to the database using dblog or the like.
-      if (($exception->errorInfo[1] ?? NULL) === 1153) {
+      if ($code === 1153) {
         $message = Unicode::truncateBytes($exception->getMessage(), Connection::MIN_MAX_ALLOWED_PACKET);
         throw new DatabaseExceptionWrapper($message, $code, $exception);
       }
@@ -38,8 +38,8 @@ dump([$exception, $statement, $arguments, $options]);
       // in case of attempted INSERT of a record with an undefined column and no
       // default value indicated in schema, MySql returns a 1364 error code.
       if (
-        substr($exception->getCode(), -6, -3) == '23' ||
-        ($exception->errorInfo[1] ?? NULL) === 1364
+        substr($exception->getSqlState(), -6, -3) == '23' ||
+        $code === 1364
       ) {
         throw new IntegrityConstraintViolationException($message, $code, $exception);
       }
