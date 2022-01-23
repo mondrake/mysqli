@@ -112,9 +112,7 @@ class Statement extends StatementWrapper {
 
     if (isset($options['fetch'])) {
       if (is_string($options['fetch'])) {
-        // \PDO::FETCH_PROPS_LATE tells __construct() to run before properties
-        // are added to the object.
-        $this->setFetchMode(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, $options['fetch']);
+        $this->setFetchMode(\PDO::FETCH_CLASS, $options['fetch']);
       }
       else {
         $this->setFetchMode($options['fetch']);
@@ -189,7 +187,6 @@ class Statement extends StatementWrapper {
         return (object) $row;
 
       case \PDO::FETCH_CLASS:
-      case \PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE:
         $constructor_arguments = $this->fetchOptions['constructor_args'] ?? [];
         $class_obj = new $this->fetchClass(...$constructor_arguments);
         foreach ($row as $column => $value) {
