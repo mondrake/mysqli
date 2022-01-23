@@ -189,6 +189,7 @@ class Statement extends StatementWrapper {
         return (object) $row;
 
       case \PDO::FETCH_CLASS:
+      case \PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE:
         $constructor_arguments = $this->fetchOptions['constructor_args'] ?? [];
         $class_obj = new $this->fetchClass(...$constructor_arguments);
         foreach ($row as $column => $value) {
