@@ -3,10 +3,10 @@
 namespace Drupal\mysqli\Driver\Database\mysqli;
 
 use Drupal\Core\Database\Database;
+use Drupal\Core\Database\TransactionNameNonUniqueException;
 use Drupal\mysql\Driver\Database\mysql\Connection as BaseConnection;
 use Drupal\mysqli\Driver\Database\mysqli\Parser\Parser;
 use Drupal\mysqli\Driver\Database\mysqli\Parser\Visitor;
-
 /**
  * MySQLi implementation of \Drupal\Core\Database\Connection.
  */
@@ -190,6 +190,24 @@ class Connection extends BaseConnection {
    */
   public function lastInsertId(?string $name = NULL): string {
     return $this->connection->insert_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function pushTransaction($name) {
+    if (isset($this->transactionLayers[$name])) {
+      throw new TransactionNameNonUniqueException($name . " is already in use.");
+    }
+    // If we're already in a transaction then we want to create a savepoint
+    // rather than try to create another transaction.
+    if ($this->inTransaction()) {
+      $this->query('SAVEPOINT ' . $name);
+    }
+    else {
+      $this->connection->begin_transaction(0, $name);
+    }
+    $this->transactionLayers[$name] = $name;
   }
 
   /**
