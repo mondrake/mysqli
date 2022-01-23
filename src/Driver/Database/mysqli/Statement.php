@@ -149,53 +149,6 @@ class Statement extends StatementWrapper {
   /**
    * {@inheritdoc}
    */
-  public function fetchField($index = 0) {
-    return (string) $this->mysqliResult->fetch_column($index);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function fetchObject(string $class_name = NULL, array $constructor_arguments = NULL) {
-    if ($class_name) {
-      return $this->clientStatement->fetchObject($class_name, $constructor_arguments);
-    }
-    return $this->clientStatement->fetchObject();
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function rowCount() {
-    // SELECT query should not use the method.
-    if ($this->rowCountEnabled) {
-      if ($this->mysqliConnection->info === NULL && $this->mysqliResult) {
-        return $this->mysqliResult->num_rows;
-      }
-      else {
-        [$matched] = sscanf($this->mysqliConnection->info, "Rows matched: %d Changed: %d Warnings: %d");
-        return $matched;
-      }
-    }
-    else {
-      throw new RowCountException();
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function setFetchMode($mode, $a1 = NULL, $a2 = []) {
-    $this->defaultFetchMode = $mode;
-    if ($mode === \PDO::FETCH_CLASS) {
-      $this->fetchClass = $a1;
-    }
-    return TRUE;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function fetch($mode = NULL, $cursor_orientation = NULL, $cursor_offset = NULL) {
     if (is_string($mode)) {
       $this->setFetchMode(\PDO::FETCH_CLASS, $mode);
@@ -276,6 +229,95 @@ class Statement extends StatementWrapper {
     }
 
     return $rows;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function fetchAllAssoc($key, $fetch = NULL) {
+    $return = [];
+    if (isset($fetch)) {
+      if (is_string($fetch)) {
+        $this->setFetchMode(\PDO::FETCH_CLASS, $fetch);
+      }
+      else {
+        $this->setFetchMode($fetch ?: $this->defaultFetchMode);
+      }
+    }
+
+    while ($record = $this->fetch()) {
+      $record_key = is_object($record) ? $record->$key : $record[$key];
+      $return[$record_key] = $record;
+    }
+
+    return $return;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function fetchAllKeyed($key_index = 0, $value_index = 1) {
+    $return = [];
+    $this->setFetchMode(\PDO::FETCH_ASSOC);
+    while ($record = $this->fetch(\PDO::FETCH_ASSOC)) {
+      $cols = array_keys($record);
+      $return[$record[$cols[$key_index]]] = $record[$cols[$value_index]];
+    }
+    return $return;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function fetchField($index = 0) {
+    if (($ret = $this->fetch(\PDO::FETCH_NUM)) === FALSE) {
+      return FALSE;
+    }
+    return $ret[$index] === NULL ? NULL : (string) $ret[$index];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function fetchObject(string $class_name = NULL, array $constructor_arguments = NULL) {
+    if (isset($class_name)) {
+      $this->fetchStyle = \PDO::FETCH_CLASS;
+      $this->fetchOptions = [
+        'class' => $class_name,
+        'constructor_args' => $constructor_arguments,
+      ];
+    }
+    return $this->fetch($class_name ?? \PDO::FETCH_OBJ);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function rowCount() {
+    // SELECT query should not use the method.
+    if ($this->rowCountEnabled) {
+      if ($this->mysqliConnection->info === NULL && $this->mysqliResult) {
+        return $this->mysqliResult->num_rows;
+      }
+      else {
+        [$matched] = sscanf($this->mysqliConnection->info, "Rows matched: %d Changed: %d Warnings: %d");
+        return $matched;
+      }
+    }
+    else {
+      throw new RowCountException();
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setFetchMode($mode, $a1 = NULL, $a2 = []) {
+    $this->defaultFetchMode = $mode;
+    if ($mode === \PDO::FETCH_CLASS) {
+      $this->fetchClass = $a1;
+    }
+    return TRUE;
   }
 
 }
