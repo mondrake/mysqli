@@ -80,10 +80,10 @@ class Connection extends BaseMySqlConnection {
   public static function open(array &$connection_options = []) {
     if (isset($connection_options['_dsn_utf8_fallback']) && $connection_options['_dsn_utf8_fallback'] === TRUE) {
       // Only used during the installer version check, as a fallback from utf8mb4.
-      $charset = 'utf8';
+      $charset = 'utf8x';
     }
     else {
-      $charset = 'utf8mb4';
+      $charset = 'utf8mb4x';
     }
 
     // Allow PDO options to be overridden.

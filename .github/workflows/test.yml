@@ -19,7 +19,7 @@ jobs:
     name: "Test mysqli"
     runs-on: ubuntu-20.04
     env:
-        SIMPLETEST_DB: "mysqli://roxxxot:@0.0.0.0/drupal_db?module=mysqli#d10t"
+        SIMPLETEST_DB: "mysqli://root:@0.0.0.0/drupal_db?module=mysqli#d10t"
 
     strategy:
       matrix:
