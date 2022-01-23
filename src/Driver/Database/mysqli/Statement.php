@@ -303,9 +303,9 @@ class Statement extends StatementWrapper {
   public function rowCount() {
     // SELECT query should not use the method.
     if ($this->rowCountEnabled) {
-dump('******', $this->queryString, $this->mysqliConnection, $this->mysqliConnection->info);
-      if ($this->mysqliConnection->info === NULL && $this->mysqliResult) {
-        return $this->mysqliResult->num_rows;
+dump('******', $this->queryString, $this->mysqliConnection->info, $this->mysqliConnection->affected_rows, $this->mysqliConnection->info);
+      if ($this->mysqliConnection->info === NULL && $this->mysqliConnection->affected_rows) {
+        return $this->mysqliConnection->affected_rows;
       }
       else {
         [$matched] = sscanf($this->mysqliConnection->info ?? '', "Rows matched: %d Changed: %d Warnings: %d");
