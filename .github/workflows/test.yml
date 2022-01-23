@@ -2,7 +2,9 @@ name: PHPUnit Testing
 
 on:
   push:
-    branches: [ main, dev.* ]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 env:
     SIMPLETEST_BASE_URL: "http://localhost:8080"
