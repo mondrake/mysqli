@@ -214,6 +214,13 @@ class Connection extends BaseMySqlConnection {
   /**
    * {@inheritdoc}
    */
+  public function rollBack($savepoint_name = 'drupal_transaction') {
+    return BaseConnection::rollBack($savepoint_name);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function doCommit() {
     // MySQL will automatically commit transactions when tables are altered or
     // created (DDL transactions are not supported). Prevent triggering an
@@ -288,7 +295,7 @@ class Connection extends BaseMySqlConnection {
     $options += $this->defaultOptions();
 
     if (isset($options['return'])) {
-      @trigger_error('Passing "return" option to Drupal\Core\Database::Connection() is deprecated in drupal:9.4.0 and is removed in drupal:11.0.0. For data manipulation operations, use dynamic queries instead. See https://www.drupal.org/node/3185520', E_USER_DEPRECATED);
+      @trigger_error('Passing "return" option to ' . __METHOD__ . '() is deprecated in drupal:9.4.0 and is removed in drupal:11.0.0. For data manipulation operations, use dynamic queries instead. See https://www.drupal.org/node/3185520', E_USER_DEPRECATED);
     }
 
     assert(!isset($options['target']), 'Passing "target" option to query() has no effect. See https://www.drupal.org/node/2993033');
