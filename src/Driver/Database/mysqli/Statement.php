@@ -303,7 +303,7 @@ class Statement extends StatementWrapper {
   public function rowCount() {
     // SELECT query should not use the method.
     if ($this->rowCountEnabled) {
-dump('******', $this->queryString, $this->mysqliConnection, this->mysqliConnection->info);
+dump('******', $this->queryString, $this->mysqliConnection, $this->mysqliConnection->info);
       if ($this->mysqliConnection->info === NULL && $this->mysqliResult) {
         return $this->mysqliResult->num_rows;
       }
