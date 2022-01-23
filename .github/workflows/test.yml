@@ -60,8 +60,10 @@ jobs:
       - name: Checkout Drupal
         run: git clone --depth=5 --branch=10.0.x http://git.drupal.org/project/drupal.git .
 
-      - name: Checkout mysqli
-        run: git clone --depth=5 --branch=main https://github.com/mondrake/mysqli.git core/modules/mysqli
+      - name: Checkout mysqli module
+        uses: actions/checkout@v2
+        with:
+          path: core/modules/mysqli
 
       - name: Patch Drupal
         run: ./core/modules/mysqli/tests/github/drupal_patch.sh
