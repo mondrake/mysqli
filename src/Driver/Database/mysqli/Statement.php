@@ -112,9 +112,7 @@ class Statement extends StatementWrapper {
 
     if (isset($options['fetch'])) {
       if (is_string($options['fetch'])) {
-        // \PDO::FETCH_PROPS_LATE tells __construct() to run before properties
-        // are added to the object.
-        $this->setFetchMode(\PDO::FETCH_CLASS | \PDO::FETCH_PROPS_LATE, $options['fetch']);
+        $this->setFetchMode(\PDO::FETCH_CLASS, $options['fetch']);
       }
       else {
         $this->setFetchMode($options['fetch']);
@@ -305,8 +303,9 @@ class Statement extends StatementWrapper {
   public function rowCount() {
     // SELECT query should not use the method.
     if ($this->rowCountEnabled) {
-      if ($this->mysqliConnection->info === NULL && $this->mysqliResult) {
-        return $this->mysqliResult->num_rows;
+// dump('******', $this->queryString, $this->mysqliConnection->info, $this->mysqliConnection->affected_rows, $this->mysqliConnection->info);
+      if ($this->mysqliConnection->info === NULL && $this->mysqliConnection->affected_rows) {
+        return $this->mysqliConnection->affected_rows;
       }
       else {
         [$matched] = sscanf($this->mysqliConnection->info ?? '', "Rows matched: %d Changed: %d Warnings: %d");
