@@ -5,6 +5,3 @@ curl https://git.drupalcode.org/project/drupal/-/merge_requests/1626.diff | git 
 
 #3260007 Decouple Connection from the wrapped PDO connection to allow alternative clients
 curl https://www.drupal.org/files/issues/2022-01-23/3260007-4.patch | git apply -v
-
-#3259417 Missing typehints in test classes extending from Symfony
-curl https://git.drupalcode.org/project/drupal/-/merge_requests/1682.diff | git apply -v
