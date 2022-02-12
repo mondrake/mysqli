@@ -93,6 +93,6 @@ jobs:
           vendor/bin/drush runserver localhost:8080 --default-server=localhost:8080 &
           sleep 1s
 
-#      - name: Run tests
-#        run: vendor/bin/phpunit -c core --color=always --group Database
+      - name: Run tests
+        run: vendor/bin/phpunit -c core --color=always --group Database
 #        run: vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/DeleteTruncateTest.php
