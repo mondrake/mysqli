@@ -5,13 +5,10 @@
     "license": "LGPL-3.0-or-later",
     "require": {
         "drupal/core": "^10",
-        "drush/drush": "^11"
+        "drush/drush": "^11.0.6"
     },
     "autoload": {
-      "classmap": [
-          "drush/SqlMysqli.php",
-          "drush/SqlBase.php"
-      ]
+      "classmap": ["drush/SqlMysqli.php"]
     },
     "minimum-stability": "dev"
 }
