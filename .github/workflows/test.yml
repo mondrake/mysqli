@@ -69,11 +69,9 @@ jobs:
         run: ./mysqli_staging/tests/github/drupal_patch.sh
 
       - name: Install Composer dependencies
-        run: |
-          composer install --no-progress --ansi
-          composer require drush/drush --no-progress --ansi
+        run: composer install --no-progress --ansi
 
-      - name: Composer require DruDbal from local staging
+      - name: Composer require mysqli from local staging
         run: |
           git -C mysqli_staging checkout -b test-run-branch
           composer config repositories.test-run '{"type": "path", "url": "mysqli_staging", "options": {"symlink": false}}'
