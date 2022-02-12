@@ -1,0 +1,14 @@
+{
+    "name": "mondrake/mysqli",
+    "type": "drupal-module",
+    "description": "Database driver for MySQLi.",
+    "license": "LGPL-3.0-or-later",
+    "require": {
+        "drupal/core": "^10",
+        "drush/drush": "^11"
+    },
+    "autoload": {
+      "classmap": ["drush/SqlMysqli.php"]
+    },
+    "minimum-stability": "dev"
+}
