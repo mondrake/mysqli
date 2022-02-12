@@ -90,7 +90,7 @@ class Connection extends BaseMySqlConnection {
     $connection_options += [
       'pdo' => [],
     ];
-
+dump($connection_options);
     try {
       $mysqli = new \mysqli(
         $connection_options['host'],
