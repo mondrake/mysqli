@@ -568,7 +568,7 @@ abstract class SqlBase implements ConfigAwareInterface
         $db_url_default = is_array($db_url) ? $db_url['default'] : $db_url;
 
         $url = parse_url($db_url_default);
-dump([$db_url, $url]);
+
         if ($url) {
             // Fill in defaults to prevent notices.
             $url += [
