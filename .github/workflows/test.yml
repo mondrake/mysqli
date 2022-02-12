@@ -63,24 +63,31 @@ jobs:
       - name: Checkout mysqli module
         uses: actions/checkout@v2
         with:
-          path: core/modules/mysqli
+          path: mysqli_staging
 
       - name: Patch Drupal
-        run: ./core/modules/mysqli/tests/github/drupal_patch.sh
+        run: ./mysqli_staging/tests/github/drupal_patch.sh
 
       - name: Install Composer dependencies
+        run: composer install --no-progress --ansi
+
+      - name: Composer require mysqli from local staging
         run: |
-          composer install --no-progress --ansi
-          composer require drush/drush --no-progress --ansi
+          git -C mysqli_staging checkout -b test-run-branch
+          composer config repositories.test-run '{"type": "path", "url": "mysqli_staging", "options": {"symlink": false}}'
+          composer require "mondrake/mysqli:dev-test-run-branch" --no-progress --ansi
 
       - name: Install Drupal
         continue-on-error: true
         run: |
-          # Use a custom installer.
-          cp core/modules/mysqli/tests/github/install_* .
-          php install_cli.php
-          # Report Drupal installation via Drush.
-          vendor/bin/drush rq
+          cp mysqli_staging/tests/github/install_* .
+          # Install via Drush.
+          vendor/bin/drush site-install standard --db-url=$SIMPLETEST_DB -y
+          # Report installation status.
+          php install_report.php
+          vendor/bin/drush core:status
+          vendor/bin/drush core:requirements
+          vendor/bin/drush pml --type=module --no-core
           # Spin a test webserver.
           mkdir -p sites/default/files/simpletest
           vendor/bin/drush runserver localhost:8080 --default-server=localhost:8080 &

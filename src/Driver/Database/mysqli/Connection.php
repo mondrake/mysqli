@@ -97,7 +97,7 @@ class Connection extends BaseMySqlConnection {
         $connection_options['username'],
         $connection_options['password'],
         $connection_options['database'] ?? '',
-        $connection_options['port'] ?? 3306,
+        empty($connection_options['port']) ? 3306 : (int) $connection_options['port'],
         $connection_options['unix_socket'] ?? ''
       );
       if (!$mysqli->set_charset($charset)) {
