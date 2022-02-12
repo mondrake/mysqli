@@ -8,7 +8,10 @@
         "drush/drush": "^11"
     },
     "autoload": {
-      "classmap": ["drush/SqlMysqli.php"]
+      "classmap": [
+          "drush/SqlMysqli.php",
+          "drush/SqlBase.php"
+      ]
     },
     "minimum-stability": "dev"
 }
