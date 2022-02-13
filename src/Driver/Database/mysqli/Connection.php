@@ -206,6 +206,7 @@ dump(['pushTransaction end', $this->transactionLayers]);
 dump(['popCommittableTransactions in', $this->transactionLayers]);
     // Commit all the committable layers.
     foreach (array_reverse($this->transactionLayers) as $name => $active) {
+dump(['popCommittableTransactions 1', $name, $active]);
       // Stop once we found an active transaction.
       if ($active) {
         break;
