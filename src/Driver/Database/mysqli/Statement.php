@@ -301,16 +301,32 @@ class Statement extends StatementWrapper {
    * {@inheritdoc}
    */
   public function rowCount() {
-    // SELECT query should not use the method.
+    // SELECT query should not use this method.
     if ($this->rowCountEnabled) {
-dump(['******', $this->queryString, $this->mysqliConnection->info, $this->mysqliConnection->affected_rows]);
-      if ($this->mysqliConnection->affected_rows) {
+      // @todo The most accurate value to return for Drupal here is the first
+      //   occurence of an integer in the string carried by the connection's
+      //   $info property.
+      //   This is something like 'Rows matched: 1  Changed: 1  Warnings: 0' for
+      //   UPDATE or DELETE operations, and '' for INSERT ones.
+      //   This however requires a regex parsing of the string which is
+      //   expensive; $affected_rows would be less accurate but much faster. We
+      //   would need Drupal to be less strict in testing, and never rely on
+      //   this value in runtime (which would be healthy anyway).
+      }
+      if ($this->mysqliConnection->info !== NULL) {
+        $matches = [];
+        if (preg_match('/\s(\d+)\s/', $this->mysqliConnection->info, $matches) === 1) {
+dump(['******', $this->queryString, $this->mysqliConnection->info, $matches, $this->mysqliConnection->affected_rows]);
+          return (int) $matches[0];
+        }
+        else {
+          new DatabaseExceptionWrapper('Invalid data in the $info property of the mysqli connection - ' . $this->mysqliConnection->info);
+        }
+      }
+      elseif ($this->mysqliConnection->affected_rows !== NULL) {
         return $this->mysqliConnection->affected_rows;
       }
-      else {
-        [$matched] = sscanf($this->mysqliConnection->info ?? '', "Rows matched: %d Changed: %d Warnings: %d");
-        return $matched;
-      }
+      new DatabaseExceptionWrapper('Unable to retrieve affected rows data');
     }
     else {
       throw new RowCountException();
