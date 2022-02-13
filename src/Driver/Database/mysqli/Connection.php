@@ -237,20 +237,18 @@ dump(['rollBack', $savepoint_name, $this->transactionLayers]);
     if (!$this->inTransaction()) {
       throw new TransactionNoActiveException();
     }
-dump(['rollBack 1']);
     // A previous rollback to an earlier savepoint may mean that the savepoint
     // in question has already been accidentally committed.
     if (!isset($this->transactionLayers[$savepoint_name])) {
       throw new TransactionNoActiveException();
     }
-dump(['rollBack 2']);
 
     // We need to find the point we're rolling back to, all other savepoints
     // before are no longer needed. If we rolled back other active savepoints,
     // we need to throw an exception.
     $rolled_back_other_active_savepoints = FALSE;
     while ($savepoint = array_pop($this->transactionLayers)) {
-dump(['rollBack 3', $savepoint, $savepoint_name]);
+//dump(['rollBack 3', $savepoint, $savepoint_name, $this->transactionLayers]);
       if ($savepoint == $savepoint_name) {
         // If it is the last the transaction in the stack, then it is not a
         // savepoint, it is the transaction itself so we will need to roll back
@@ -258,11 +256,11 @@ dump(['rollBack 3', $savepoint, $savepoint_name]);
         if (empty($this->transactionLayers)) {
           break;
         }
-dump(['in rollback 1', $savepoint]);
+//dump(['in rollback 1', $savepoint]);
         $success = $this->connection->rollback(0, $savepoint);
-dump(['in rollback 2', $success]);
+//dump(['in rollback 2', $success]);
         $this->popCommittableTransactions();
-dump(['in rollback 3', $this->transactionLayers]);
+//dump(['in rollback 3', $this->transactionLayers]);
         if ($rolled_back_other_active_savepoints) {
           throw new TransactionOutOfOrderException();
         }
@@ -280,7 +278,9 @@ dump(['in rollback 3', $this->transactionLayers]);
       call_user_func($callback, FALSE);
     }
 
-    $this->connection->rollBack();
+    if (!$this->connection->rollBack()) {
+      trigger_error('Invalid rollback', E_USER_WARNING);
+    }
     if ($rolled_back_other_active_savepoints) {
       throw new TransactionOutOfOrderException();
     }
