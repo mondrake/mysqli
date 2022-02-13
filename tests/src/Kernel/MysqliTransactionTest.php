@@ -6,7 +6,7 @@ use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Core\Database\TransactionOutOfOrderException;
 use Drupal\Core\Database\TransactionNoActiveException;
 use PHPUnit\Framework\Error\Warning;
-use Drupal\KernelTests\Core\Database\TransactionTest as TransactionTestBase;
+use Drupal\KernelTests\Core\Database\DatabaseTestBase;
 
 /**
  * Tests the transaction abstraction system.
@@ -29,7 +29,7 @@ use Drupal\KernelTests\Core\Database\TransactionTest as TransactionTestBase;
  *
  * @group Database
  */
-class MysqliTransactionTest extends TransactionTestBase {
+class MysqliTransactionTest extends DatabaseTestBase {
 
   /**
    * Tests the compatibility of transactions with DDL statements.
