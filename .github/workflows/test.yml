@@ -95,4 +95,6 @@ jobs:
 
       - name: Run tests
 #        run: vendor/bin/phpunit -c core --color=always --group Database
-        run: vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/UpdateTest.php
+        run: |
+          vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/UpdateTest.php
+          vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/UpsertTest.php

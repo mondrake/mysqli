@@ -320,13 +320,13 @@ dump(['******', $this->queryString, $this->mysqliConnection->info, $matches, $th
           return (int) $matches[0];
         }
         else {
-          new DatabaseExceptionWrapper('Invalid data in the $info property of the mysqli connection - ' . $this->mysqliConnection->info);
+          throw new DatabaseExceptionWrapper('Invalid data in the $info property of the mysqli connection - ' . $this->mysqliConnection->info);
         }
       }
       elseif ($this->mysqliConnection->affected_rows !== NULL) {
         return $this->mysqliConnection->affected_rows;
       }
-      new DatabaseExceptionWrapper('Unable to retrieve affected rows data');
+      throw new DatabaseExceptionWrapper('Unable to retrieve affected rows data');
     }
     else {
       throw new RowCountException();
