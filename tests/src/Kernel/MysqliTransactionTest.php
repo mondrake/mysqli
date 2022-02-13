@@ -36,13 +36,15 @@ class MysqliTransactionTest extends DatabaseTestBase {
    */
   public function testTransactionWithDdlStatement() {
     // First, test that a commit works normally, even with DDL statements.
-/*    $transaction = $this->connection->startTransaction();
+dump('****** ONE');
+    $transaction = $this->connection->startTransaction();
     $this->insertRow('row');
     $this->executeDDLStatement();
     unset($transaction);
     $this->assertRowPresent('row');
 
     // Even in different order.
+dump('****** TWO');
     $this->cleanUp();
     $transaction = $this->connection->startTransaction();
     $this->executeDDLStatement();
@@ -51,6 +53,7 @@ class MysqliTransactionTest extends DatabaseTestBase {
     $this->assertRowPresent('row');
 
     // Even with stacking.
+dump('****** THREE');
     $this->cleanUp();
     $transaction = $this->connection->startTransaction();
     $transaction2 = $this->connection->startTransaction();
@@ -61,9 +64,10 @@ class MysqliTransactionTest extends DatabaseTestBase {
     unset($transaction3);
     unset($transaction);
     $this->assertRowPresent('row');
-*/
+
     // A transaction after a DDL statement should still work the same.
-//    $this->cleanUp();
+dump('****** FOUR');
+    $this->cleanUp();
     $transaction = $this->connection->startTransaction();
     $transaction2 = $this->connection->startTransaction();
     $this->executeDDLStatement();
@@ -103,6 +107,7 @@ dump('insert');
       $this->assertRowAbsent('row');
     }
     else {
+dump('****** FIVE');
       // For database servers that do not support transactional DDL,
       // the DDL statement should commit the transaction stack.
       $this->cleanUp();

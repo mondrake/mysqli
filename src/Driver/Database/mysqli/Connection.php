@@ -206,10 +206,8 @@ dump(['pushTransaction end', $this->transactionLayers]);
 dump(['popCommittableTransactions in', $this->transactionLayers]);
     // Commit all the committable layers.
     foreach (array_reverse($this->transactionLayers) as $name => $active) {
-dump(['popCommittableTransactions 1', $name, $active]);
       // Stop once we found an active transaction.
       if ($active) {
-dump(['popCommittableTransactions 2 break']);
         break;
       }
 
@@ -219,35 +217,9 @@ dump(['popCommittableTransactions 2 break']);
         $this->doCommit();
       }
       else {
-        // Attempt to release this savepoint in the standard way.
-        try {
-          $success = $this->connection->release_savepoint($name);
-          if (!$success) {
-            $this->transactionLayers = [];
-            $this->doCommit();
-          }
-dump(['popCommittableTransactions 4', $name, $success]);
-        }
-        catch (\mysqli_sql_exception $e) {
-dump($e);
-          // However, in MySQL (InnoDB), savepoints are automatically committed
-          // when tables are altered or created (DDL transactions are not
-          // supported). This can cause exceptions due to trying to release
-          // savepoints which no longer exist.
-          //
-          // To avoid exceptions when no actual error has occurred, we silently
-          // succeed for MySQL error code 1305 ("SAVEPOINT does not exist").
-          if ($e->getPrevious()->getCode() == '1305') {
-            // If one SAVEPOINT was released automatically, then all were.
-            // Therefore, clean the transaction stack.
-            $this->transactionLayers = [];
-            // We also have to explain to PDO that the transaction stack has
-            // been cleaned-up.
-            $this->doCommit();
-          }
-          else {
-            throw $e;
-          }
+        if (!$this->connection->release_savepoint($name)) {
+          $this->transactionLayers = [];
+          $this->doCommit();
         }
       }
     }
@@ -284,9 +256,10 @@ dump(['rollBack', $savepoint_name, $this->transactionLayers]);
           break;
         }
 dump(['in rollback 1', $savepoint]);
-        $this->connection->rollback(0, $savepoint);
+        $success = $this->connection->rollback(0, $savepoint);
+dump(['in rollback 2', $success]);
         $this->popCommittableTransactions();
-dump(['in rollback 2', $this->transactionLayers]);
+dump(['in rollback 3', $this->transactionLayers]);
         if ($rolled_back_other_active_savepoints) {
           throw new TransactionOutOfOrderException();
         }
