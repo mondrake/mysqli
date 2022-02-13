@@ -304,7 +304,7 @@ class Statement extends StatementWrapper {
     // SELECT query should not use this method.
     if ($this->rowCountEnabled) {
       // @todo The most accurate value to return for Drupal here is the first
-      //   occurence of an integer in the string carried by the connection's
+      //   occurence of an integer in the string stored by the connection's
       //   $info property.
       //   This is something like 'Rows matched: 1  Changed: 1  Warnings: 0' for
       //   UPDATE or DELETE operations, and '' for INSERT ones.
@@ -312,7 +312,6 @@ class Statement extends StatementWrapper {
       //   expensive; $affected_rows would be less accurate but much faster. We
       //   would need Drupal to be less strict in testing, and never rely on
       //   this value in runtime (which would be healthy anyway).
-      }
       if ($this->mysqliConnection->info !== NULL) {
         $matches = [];
         if (preg_match('/\s(\d+)\s/', $this->mysqliConnection->info, $matches) === 1) {
