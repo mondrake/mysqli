@@ -194,6 +194,7 @@ dump(['pushTransaction', $name]);
       $this->connection->begin_transaction(0, $name);
     }
     $this->transactionLayers[$name] = $name;
+dump(['pushTransaction end', $this->transactionLayers]);
   }
 
   /**
@@ -203,7 +204,7 @@ dump(['pushTransaction', $name]);
    * need to use direct rollback on the connection.
    */
   protected function popCommittableTransactions() {
-dump(['popCommittableTransactions']);
+dump(['popCommittableTransactions in', $this->transactionLayers]);
     // Commit all the committable layers.
     foreach (array_reverse($this->transactionLayers) as $name => $active) {
       // Stop once we found an active transaction.
@@ -243,6 +244,7 @@ dump(['popCommittableTransactions']);
         }
       }
     }
+dump(['popCommittableTransactions out', $this->transactionLayers]);
   }
 
   /**
@@ -252,7 +254,7 @@ dump(['popCommittableTransactions']);
    * need to use direct rollback on the connection.
    */
   public function rollBack($savepoint_name = 'drupal_transaction') {
-dump(['rollBack', $savepoint_name]);
+dump(['rollBack', $savepoint_name, $this->transactionLayers]);
     if (!$this->inTransaction()) {
       throw new TransactionNoActiveException();
     }
@@ -274,8 +276,10 @@ dump(['rollBack', $savepoint_name]);
         if (empty($this->transactionLayers)) {
           break;
         }
+dump(['in rollback 1', $savepoint]);
         $this->connection->rollback(0, $savepoint);
         $this->popCommittableTransactions();
+dump(['in rollback 2', $this->transactionLayers]);
         if ($rolled_back_other_active_savepoints) {
           throw new TransactionOutOfOrderException();
         }
