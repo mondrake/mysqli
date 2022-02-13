@@ -222,6 +222,7 @@ dump(['popCommittableTransactions in', $this->transactionLayers]);
           $this->connection->release_savepoint($name);
         }
         catch (\mysqli_sql_exception $e) {
+  dump($e);
           // However, in MySQL (InnoDB), savepoints are automatically committed
           // when tables are altered or created (DDL transactions are not
           // supported). This can cause exceptions due to trying to release

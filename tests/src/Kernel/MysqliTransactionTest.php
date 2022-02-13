@@ -64,12 +64,12 @@ class MysqliTransactionTest extends DatabaseTestBase {
 */
     // A transaction after a DDL statement should still work the same.
 //    $this->cleanUp();
-    $transaction = $this->connection->startTransaction('one');
-    $transaction2 = $this->connection->startTransaction('two');
+    $transaction = $this->connection->startTransaction();
+    $transaction2 = $this->connection->startTransaction();
     $this->executeDDLStatement();
 dump('commit two');
     unset($transaction2);
-    $transaction3 = $this->connection->startTransaction('three');
+    $transaction3 = $this->connection->startTransaction();
 dump('insert');
     $this->insertRow('row');
     $transaction3->rollBack();
