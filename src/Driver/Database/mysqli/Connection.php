@@ -221,9 +221,12 @@ dump(['popCommittableTransactions 2 break']);
       else {
         // Attempt to release this savepoint in the standard way.
         try {
-dump(['popCommittableTransactions 3', $name]);
           $success = $this->connection->release_savepoint($name);
-dump(['popCommittableTransactions 4', $success]);
+          if (!$success) {
+            $this->transactionLayers = [];
+            $this->doCommit();
+          }
+dump(['popCommittableTransactions 4', $name, $success]);
         }
         catch (\mysqli_sql_exception $e) {
 dump($e);
