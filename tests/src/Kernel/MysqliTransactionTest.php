@@ -67,7 +67,7 @@ class MysqliTransactionTest extends TransactionTestBase {
     $transaction = $this->connection->startTransaction('one');
     $transaction2 = $this->connection->startTransaction('two');
     $this->executeDDLStatement();
-dump('commit two'):
+dump('commit two');
     unset($transaction2);
     $transaction3 = $this->connection->startTransaction('three');
 dump('insert');
