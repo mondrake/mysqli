@@ -80,7 +80,7 @@ jobs:
           composer config repositories.test-run '{"type": "path", "url": "mysqli_staging", "options": {"symlink": false}}'
           composer require "mondrake/mysqli:dev-test-run-branch" --no-progress --ansi
 
-      - name: Install Drupal
+#      - name: Install Drupal
 #        continue-on-error: true
 #        run: |
 #          cp mysqli_staging/tests/github/install_* .
