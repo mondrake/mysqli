@@ -36,7 +36,7 @@ class MysqliTransactionTest extends DatabaseTestBase {
    */
   public function testTransactionWithDdlStatement() {
     // First, test that a commit works normally, even with DDL statements.
-dump('****** ONE');
+/*dump('****** ONE');
     $transaction = $this->connection->startTransaction();
     $this->insertRow('row');
     $this->executeDDLStatement();
@@ -71,16 +71,14 @@ dump('****** FOUR');
     $transaction = $this->connection->startTransaction();
     $transaction2 = $this->connection->startTransaction();
     $this->executeDDLStatement();
-dump('commit savepoint_1');
     unset($transaction2);
     $transaction3 = $this->connection->startTransaction();
-dump('insert');
     $this->insertRow('row');
     $transaction3->rollBack();
     unset($transaction3);
     unset($transaction);
     $this->assertRowAbsent('row');
-
+*/
     // The behavior of a rollback depends on the type of database server.
     if ($this->connection->supportsTransactionalDDL()) {
       // For database servers that support transactional DDL, a rollback

@@ -193,7 +193,7 @@ class Connection extends BaseMySqlConnection {
       $this->connection->begin_transaction(0, $name);
     }
     $this->transactionLayers[$name] = $name;
-dump(['pushTransaction end', $this->transactionLayers]);
+dump(['pushTransaction', $this->transactionLayers]);
   }
 
   /**
@@ -237,17 +237,20 @@ dump(['rollBack', $savepoint_name, $this->transactionLayers]);
     if (!$this->inTransaction()) {
       throw new TransactionNoActiveException();
     }
+dump(['rollBack 1']);
     // A previous rollback to an earlier savepoint may mean that the savepoint
     // in question has already been accidentally committed.
     if (!isset($this->transactionLayers[$savepoint_name])) {
       throw new TransactionNoActiveException();
     }
+dump(['rollBack 2']);
 
     // We need to find the point we're rolling back to, all other savepoints
     // before are no longer needed. If we rolled back other active savepoints,
     // we need to throw an exception.
     $rolled_back_other_active_savepoints = FALSE;
     while ($savepoint = array_pop($this->transactionLayers)) {
+dump(['rollBack 3', $savepoint, $savepoint_name]);
       if ($savepoint == $savepoint_name) {
         // If it is the last the transaction in the stack, then it is not a
         // savepoint, it is the transaction itself so we will need to roll back
