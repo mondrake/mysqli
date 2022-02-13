@@ -10,6 +10,9 @@ env:
     SIMPLETEST_BASE_URL: "http://localhost:8080"
     BROWSERTEST_OUTPUT_DIRECTORY: "sites/default/files/simpletest"
     MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu","--headless", "--no-sandbox"]}}, "http://localhost:4444"]'
+    PHPUNIT_SKIP_CLASS: '[
+      "Drupal\\KernelTests\\Core\\Database\\SqlModeTest"
+    ]'
 
 jobs:
 
@@ -78,7 +81,7 @@ jobs:
           composer require "mondrake/mysqli:dev-test-run-branch" --no-progress --ansi
 
       - name: Install Drupal
-        continue-on-error: true
+#        continue-on-error: true
         run: |
           cp mysqli_staging/tests/github/install_* .
           # Install via Drush.
@@ -96,5 +99,5 @@ jobs:
       - name: Run tests
         run: vendor/bin/phpunit -c core --color=always --group Database
 #        run: |
-#          vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/UpdateTest.php
+#          vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/SqlModeTest.php
 #          vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/UpsertTest.php
