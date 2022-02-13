@@ -248,7 +248,7 @@ dump(['rollBack', $savepoint_name, $this->transactionLayers]);
     // we need to throw an exception.
     $rolled_back_other_active_savepoints = FALSE;
     while ($savepoint = array_pop($this->transactionLayers)) {
-//dump(['rollBack 3', $savepoint, $savepoint_name, $this->transactionLayers]);
+//    dump(['rollBack 3', $savepoint, $savepoint_name, $this->transactionLayers]);
       if ($savepoint == $savepoint_name) {
         // If it is the last the transaction in the stack, then it is not a
         // savepoint, it is the transaction itself so we will need to roll back
@@ -256,11 +256,8 @@ dump(['rollBack', $savepoint_name, $this->transactionLayers]);
         if (empty($this->transactionLayers)) {
           break;
         }
-//dump(['in rollback 1', $savepoint]);
         $success = $this->connection->rollback(0, $savepoint);
-//dump(['in rollback 2', $success]);
         $this->popCommittableTransactions();
-//dump(['in rollback 3', $this->transactionLayers]);
         if ($rolled_back_other_active_savepoints) {
           throw new TransactionOutOfOrderException();
         }
@@ -278,7 +275,9 @@ dump(['rollBack', $savepoint_name, $this->transactionLayers]);
       call_user_func($callback, FALSE);
     }
 
+dump(['in rollback 1']);
     if (!$this->connection->rollBack()) {
+dump(['in rollback 2']);
       trigger_error('Invalid rollback', E_USER_WARNING);
     }
     if ($rolled_back_other_active_savepoints) {
