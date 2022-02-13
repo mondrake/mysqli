@@ -181,7 +181,6 @@ class Connection extends BaseMySqlConnection {
    * {@inheritdoc}
    */
   public function pushTransaction($name) {
-dump(['pushTransaction', $name]);
     if (isset($this->transactionLayers[$name])) {
       throw new TransactionNameNonUniqueException($name . " is already in use.");
     }
