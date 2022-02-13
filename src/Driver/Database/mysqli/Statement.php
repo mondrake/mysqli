@@ -307,7 +307,8 @@ class Statement extends StatementWrapper {
       //   occurence of an integer in the string stored by the connection's
       //   $info property.
       //   This is something like 'Rows matched: 1  Changed: 1  Warnings: 0' for
-      //   UPDATE or DELETE operations, and '' for INSERT ones.
+      //   UPDATE or DELETE operations, and
+      //   'Records: 2  Duplicates: 1  Warnings: 0' for INSERT ones.
       //   This however requires a regex parsing of the string which is
       //   expensive; $affected_rows would be less accurate but much faster. We
       //   would need Drupal to be less strict in testing, and never rely on
@@ -315,7 +316,7 @@ class Statement extends StatementWrapper {
       if ($this->mysqliConnection->info !== NULL) {
         $matches = [];
         if (preg_match('/\s(\d+)\s/', $this->mysqliConnection->info, $matches) === 1) {
-dump(['******', $this->queryString, $this->mysqliConnection->info, $matches, $this->mysqliConnection->affected_rows]);
+//dump(['******', $this->queryString, $this->mysqliConnection->info, $matches, $this->mysqliConnection->affected_rows]);
           return (int) $matches[0];
         }
         else {
