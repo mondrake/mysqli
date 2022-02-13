@@ -181,6 +181,7 @@ class Connection extends BaseMySqlConnection {
    * {@inheritdoc}
    */
   public function pushTransaction($name) {
+dump(['pushTransaction', $name]);
     if (isset($this->transactionLayers[$name])) {
       throw new TransactionNameNonUniqueException($name . " is already in use.");
     }
@@ -202,6 +203,7 @@ class Connection extends BaseMySqlConnection {
    * need to use direct rollback on the connection.
    */
   protected function popCommittableTransactions() {
+dump(['popCommittableTransactions']);
     // Commit all the committable layers.
     foreach (array_reverse($this->transactionLayers) as $name => $active) {
       // Stop once we found an active transaction.
@@ -250,6 +252,7 @@ class Connection extends BaseMySqlConnection {
    * need to use direct rollback on the connection.
    */
   public function rollBack($savepoint_name = 'drupal_transaction') {
+dump(['rollBack', $savepoint_name]);
     if (!$this->inTransaction()) {
       throw new TransactionNoActiveException();
     }
@@ -300,6 +303,7 @@ class Connection extends BaseMySqlConnection {
    * {@inheritdoc}
    */
   protected function doCommit() {
+dump(['doCommit']);
     // MySQL will automatically commit transactions when tables are altered or
     // created (DDL transactions are not supported). Prevent triggering an
     // exception in this case as all statements have been committed.
