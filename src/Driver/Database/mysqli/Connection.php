@@ -260,13 +260,13 @@ dump(['rollBack', $savepoint_name, $this->transactionLayers]);
         // savepoint, it is the transaction itself so we will need to roll back
         // the transaction rather than a savepoint.
         if (empty($this->transactionLayers)) {
-dump(['rollBack 2', $savepoint, $savepoint_name, $this->transactionLayers]);
+dump(['rollBack 2', $savepoint_name, $this->transactionLayers]);
           break;
         }
 dump($this->query('SELECT * FROM {test}')->fetchAll());
 //        $success = $this->connection->rollback(0, $savepoint);
-        $success = $this->connection->rollback();
-dump(['rollBack 3', $savepoint, $savepoint_name, $this->transactionLayers, $success]);
+        $success = $this->connection->query('ROLLBACK TO SAVEPOINT ' . $savepoint_name);
+dump(['rollBack 3', $savepoint_name, $this->transactionLayers, $success]);
 dump($this->query('SELECT * FROM {test}')->fetchAll());
         $this->popCommittableTransactions();
         if ($rolled_back_other_active_savepoints) {
