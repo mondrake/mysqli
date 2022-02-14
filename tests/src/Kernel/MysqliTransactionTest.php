@@ -163,18 +163,14 @@ dump('*********************************** start');
 dump('*** outer start');
     $transaction = $this->connection->startTransaction();
     $this->insertRow('outer');
-dump($this->connection->query('SELECT * FROM {test}')->fetchAll());
 dump('*** inner start');
     $transaction2 = $this->connection->startTransaction();
     $this->insertRow('inner');
-dump($this->connection->query('SELECT * FROM {test}')->fetchAll());
     // Now rollback the inner transaction.
 dump('*** inner rollback');
     $transaction2->rollBack();
-dump($this->connection->query('SELECT * FROM {test}')->fetchAll());
 dump('*** inner unset');
     unset($transaction2);
-dump($this->connection->query('SELECT * FROM {test}')->fetchAll());
     $this->assertTrue($this->connection->inTransaction(), 'Still in a transaction after popping the outer transaction');
     // Pop the outer transaction, it should commit.
     $this->insertRow('outer-after-inner-rollback');
