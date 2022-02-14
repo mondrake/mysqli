@@ -1,4 +1,7 @@
 # mysqli
+
+[![PHPUnit Testing](https://github.com/mondrake/mysqli/actions/workflows/test.yml/badge.svg)](https://github.com/mondrake/mysqli/actions/workflows/test.yml)
+
 Database driver for MySQLi.
 
 For Drupal 10, with patches for the following issues applied:

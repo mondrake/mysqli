@@ -2,11 +2,8 @@
 
 namespace Drupal\Tests\mysqli\Kernel;
 
-use Drupal\Component\Render\FormattableMarkup;
-use Drupal\Core\Database\TransactionOutOfOrderException;
-use Drupal\Core\Database\TransactionNoActiveException;
 use PHPUnit\Framework\Error\Warning;
-use Drupal\KernelTests\Core\Database\TransactionTest as TransactionTestBase;
+use Drupal\KernelTests\Core\Database\TransactionTest;
 
 /**
  * Tests the transaction abstraction system.
@@ -29,7 +26,7 @@ use Drupal\KernelTests\Core\Database\TransactionTest as TransactionTestBase;
  *
  * @group Database
  */
-class MysqliTransactionTest extends TransactionTestBase {
+class MysqliTransactionTest extends TransactionTest {
   /**
    * Tests the compatibility of transactions with DDL statements.
    */
@@ -120,121 +117,6 @@ class MysqliTransactionTest extends TransactionTestBase {
       unset($transaction);
       $this->assertRowPresent('row');
     }
-  }
-
-  /**
-   * Tests transaction stacking, commit, and rollback.
-   */
-  public function testTransactionStacking() {
-    // Standard case: pop the inner transaction before the outer transaction.
-    $transaction = $this->connection->startTransaction();
-    $this->insertRow('outer');
-    $transaction2 = $this->connection->startTransaction();
-    $this->insertRow('inner');
-    // Pop the inner transaction.
-    unset($transaction2);
-    $this->assertTrue($this->connection->inTransaction(), 'Still in a transaction after popping the inner transaction');
-    // Pop the outer transaction.
-    unset($transaction);
-    $this->assertFalse($this->connection->inTransaction(), 'Transaction closed after popping the outer transaction');
-    $this->assertRowPresent('outer');
-    $this->assertRowPresent('inner');
-
-    // Pop the transaction in a different order they have been pushed.
-    $this->cleanUp();
-    $transaction = $this->connection->startTransaction();
-    $this->insertRow('outer');
-    $transaction2 = $this->connection->startTransaction();
-    $this->insertRow('inner');
-    // Pop the outer transaction, nothing should happen.
-    unset($transaction);
-    $this->insertRow('inner-after-outer-commit');
-    $this->assertTrue($this->connection->inTransaction(), 'Still in a transaction after popping the outer transaction');
-    // Pop the inner transaction, the whole transaction should commit.
-    unset($transaction2);
-    $this->assertFalse($this->connection->inTransaction(), 'Transaction closed after popping the inner transaction');
-    $this->assertRowPresent('outer');
-    $this->assertRowPresent('inner');
-    $this->assertRowPresent('inner-after-outer-commit');
-
-    // Rollback the inner transaction.
-//dump('*********************************** start');
-    $this->cleanUp();
-//dump('*** outer start');
-    $transaction = $this->connection->startTransaction();
-    $this->insertRow('outer');
-//dump('*** inner start');
-    $transaction2 = $this->connection->startTransaction();
-    $this->insertRow('inner');
-    // Now rollback the inner transaction.
-//dump('*** inner rollback');
-    $transaction2->rollBack();
-//dump('*** inner unset');
-    unset($transaction2);
-    $this->assertTrue($this->connection->inTransaction(), 'Still in a transaction after popping the outer transaction');
-    // Pop the outer transaction, it should commit.
-    $this->insertRow('outer-after-inner-rollback');
-//dump($this->connection->query('SELECT * FROM {test}')->fetchAll());
-//dump('*** outer unset');
-    unset($transaction);
-//dump($this->connection->query('SELECT * FROM {test}')->fetchAll());
-//dump('*********************************** end');
-    $this->assertFalse($this->connection->inTransaction(), 'Transaction closed after popping the inner transaction');
-    $this->assertRowPresent('outer');
-    $this->assertRowAbsent('inner');
-    $this->assertRowPresent('outer-after-inner-rollback');
-
-    // Rollback the inner transaction after committing the outer one.
-    $this->cleanUp();
-    $transaction = $this->connection->startTransaction();
-    $this->insertRow('outer');
-    $transaction2 = $this->connection->startTransaction();
-    $this->insertRow('inner');
-    // Pop the outer transaction, nothing should happen.
-    unset($transaction);
-    $this->assertTrue($this->connection->inTransaction(), 'Still in a transaction after popping the outer transaction');
-    // Now rollback the inner transaction, it should rollback.
-    $transaction2->rollBack();
-    unset($transaction2);
-    $this->assertFalse($this->connection->inTransaction(), 'Transaction closed after popping the inner transaction');
-    $this->assertRowPresent('outer');
-    $this->assertRowAbsent('inner');
-
-    // Rollback the outer transaction while the inner transaction is active.
-    // In that case, an exception will be triggered because we cannot
-    // ensure that the final result will have any meaning.
-    $this->cleanUp();
-    $transaction = $this->connection->startTransaction();
-    $this->insertRow('outer');
-    $transaction2 = $this->connection->startTransaction();
-    $this->insertRow('inner');
-    $transaction3 = $this->connection->startTransaction();
-    $this->insertRow('inner2');
-    // Rollback the outer transaction.
-    try {
-      $transaction->rollBack();
-      unset($transaction);
-      $this->fail('Rolling back the outer transaction while the inner transaction is active resulted in an exception.');
-    }
-    catch (TransactionOutOfOrderException $e) {
-      // Expected exception; just continue testing.
-    }
-    $this->assertFalse($this->connection->inTransaction(), 'No more in a transaction after rolling back the outer transaction');
-    // Try to commit one inner transaction.
-    unset($transaction3);
-
-    // Try to rollback one inner transaction.
-    try {
-      $transaction->rollBack();
-      unset($transaction2);
-      $this->fail('Trying to commit an inner transaction resulted in an exception.');
-    }
-    catch (TransactionNoActiveException $e) {
-      // Expected exception; just continue testing.
-    }
-    $this->assertRowAbsent('outer');
-    $this->assertRowAbsent('inner');
-    $this->assertRowAbsent('inner2');
   }
 
 }
