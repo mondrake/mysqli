@@ -78,6 +78,8 @@ class Connection extends BaseMySqlConnection {
    * {@inheritdoc}
    */
   public static function open(array &$connection_options = []) {
+    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
     if (isset($connection_options['_dsn_utf8_fallback']) && $connection_options['_dsn_utf8_fallback'] === TRUE) {
       // Only used during the installer version check, as a fallback from utf8mb4.
       $charset = 'utf8';
