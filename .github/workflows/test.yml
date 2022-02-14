@@ -98,7 +98,7 @@ jobs:
           sleep 1s
 
       - name: Run tests
-#        run: |
-#          vendor/bin/phpunit -v -c core --color=always modules/contrib/mysqli/tests/src/Kernel/MysqliTransactionTest.php
+        run: |
+          vendor/bin/phpunit -v -c core --color=always modules/contrib/mysqli/tests/src/Kernel/MysqliTransactionTest.php
 #          vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/TransactionTest.php
-        run: vendor/bin/phpunit -c core --color=always --group Database
+#        run: vendor/bin/phpunit -c core --color=always --group Database
