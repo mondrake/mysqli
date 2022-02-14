@@ -11,7 +11,8 @@ env:
     BROWSERTEST_OUTPUT_DIRECTORY: "sites/default/files/simpletest"
     MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu","--headless", "--no-sandbox"]}}, "http://localhost:4444"]'
     PHPUNIT_SKIP_CLASS: '[
-      "Drupal\\KernelTests\\Core\\Database\\SqlModeTest"
+      "Drupal\\KernelTests\\Core\\Database\\SqlModeTest",
+      "Drupal\\KernelTests\\Core\\Database\\TransactionTest"
     ]'
 
 jobs:
@@ -97,7 +98,7 @@ jobs:
 #          sleep 1s
 
       - name: Run tests
-        run: |
-          vendor/bin/phpunit -v -c core --color=always modules/contrib/mysqli/tests/src/Kernel/MysqliTransactionTest.php
-          vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/TransactionTest.php
-#        run: vendor/bin/phpunit -c core --color=always --group Database
+#        run: |
+#          vendor/bin/phpunit -v -c core --color=always modules/contrib/mysqli/tests/src/Kernel/MysqliTransactionTest.php
+#          vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/TransactionTest.php
+        run: vendor/bin/phpunit -c core --color=always --group Database
