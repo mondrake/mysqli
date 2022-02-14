@@ -5,6 +5,8 @@ namespace Drupal\mysqli\Driver\Database\mysqli;
 use Drupal\Core\Database\Connection as BaseConnection;
 use Drupal\Core\Database\Database;
 use Drupal\Core\Database\TransactionNameNonUniqueException;
+use Drupal\Core\Database\TransactionNoActiveException;
+use Drupal\Core\Database\TransactionOutOfOrderException;
 use Drupal\mysql\Driver\Database\mysql\Connection as BaseMySqlConnection;
 use Drupal\mysqli\Driver\Database\mysqli\Parser\Parser;
 use Drupal\mysqli\Driver\Database\mysqli\Parser\Visitor;
@@ -78,6 +80,8 @@ class Connection extends BaseMySqlConnection {
    * {@inheritdoc}
    */
   public static function open(array &$connection_options = []) {
+    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
     if (isset($connection_options['_dsn_utf8_fallback']) && $connection_options['_dsn_utf8_fallback'] === TRUE) {
       // Only used during the installer version check, as a fallback from utf8mb4.
       $charset = 'utf8';
@@ -187,12 +191,15 @@ class Connection extends BaseMySqlConnection {
     // If we're already in a transaction then we want to create a savepoint
     // rather than try to create another transaction.
     if ($this->inTransaction()) {
+//dump(['pushTransaction savepoint', $name]);
       $this->connection->savepoint($name);
     }
     else {
+//dump(['pushTransaction begin_transaction', $name]);
       $this->connection->begin_transaction(0, $name);
     }
     $this->transactionLayers[$name] = $name;
+//dump(['pushTransaction out', $this->transactionLayers]);
   }
 
   /**
@@ -202,6 +209,7 @@ class Connection extends BaseMySqlConnection {
    * need to use direct rollback on the connection.
    */
   protected function popCommittableTransactions() {
+//dump(['popCommittableTransactions in', $this->transactionLayers]);
     // Commit all the committable layers.
     foreach (array_reverse($this->transactionLayers) as $name => $active) {
       // Stop once we found an active transaction.
@@ -212,35 +220,19 @@ class Connection extends BaseMySqlConnection {
       // If there are no more layers left then we should commit.
       unset($this->transactionLayers[$name]);
       if (empty($this->transactionLayers)) {
+//dump(['popCommittableTransactions 1', $name]);
         $this->doCommit();
       }
       else {
-        // Attempt to release this savepoint in the standard way.
-        try {
-          $this->connection->release_savepoint($name);
-        }
-        catch (\mysqli_sql_exception $e) {
-          // However, in MySQL (InnoDB), savepoints are automatically committed
-          // when tables are altered or created (DDL transactions are not
-          // supported). This can cause exceptions due to trying to release
-          // savepoints which no longer exist.
-          //
-          // To avoid exceptions when no actual error has occurred, we silently
-          // succeed for MySQL error code 1305 ("SAVEPOINT does not exist").
-          if ($e->getPrevious()->getCode() == '1305') {
-            // If one SAVEPOINT was released automatically, then all were.
-            // Therefore, clean the transaction stack.
-            $this->transactionLayers = [];
-            // We also have to explain to PDO that the transaction stack has
-            // been cleaned-up.
-            $this->doCommit();
-          }
-          else {
-            throw $e;
-          }
+//dump(['popCommittableTransactions 2', $name]);
+        if (!$this->connection->release_savepoint($name)) {
+//dump(['popCommittableTransactions 3', $name]);
+          $this->transactionLayers = [];
+          $this->doCommit();
         }
       }
     }
+//dump(['popCommittableTransactions out', $this->transactionLayers]);
   }
 
   /**
@@ -250,6 +242,7 @@ class Connection extends BaseMySqlConnection {
    * need to use direct rollback on the connection.
    */
   public function rollBack($savepoint_name = 'drupal_transaction') {
+//dump(['rollBack', $savepoint_name, $this->transactionLayers]);
     if (!$this->inTransaction()) {
       throw new TransactionNoActiveException();
     }
@@ -269,9 +262,14 @@ class Connection extends BaseMySqlConnection {
         // savepoint, it is the transaction itself so we will need to roll back
         // the transaction rather than a savepoint.
         if (empty($this->transactionLayers)) {
+//dump(['rollBack 2', $savepoint_name, $this->transactionLayers]);
           break;
         }
-        $this->connection->rollback(0, $savepoint);
+//dump($this->query('SELECT * FROM {test}')->fetchAll());
+//        $success = $this->connection->rollback(0, $savepoint);
+        $success = $this->connection->query('ROLLBACK TO SAVEPOINT ' . $savepoint_name);
+//dump(['rollBack 3', $savepoint_name, $this->transactionLayers, $success]);
+//dump($this->query('SELECT * FROM {test}')->fetchAll());
         $this->popCommittableTransactions();
         if ($rolled_back_other_active_savepoints) {
           throw new TransactionOutOfOrderException();
@@ -279,6 +277,7 @@ class Connection extends BaseMySqlConnection {
         return;
       }
       else {
+//dump(['rollBack 4', $savepoint, $savepoint_name, $this->transactionLayers]);
         $rolled_back_other_active_savepoints = TRUE;
       }
     }
@@ -290,7 +289,11 @@ class Connection extends BaseMySqlConnection {
       call_user_func($callback, FALSE);
     }
 
-    $this->connection->rollBack();
+//dump(['in rollback 1']);
+    if (!$this->connection->rollBack()) {
+//dump(['in rollback 2']);
+      trigger_error('Invalid rollback', E_USER_WARNING);
+    }
     if ($rolled_back_other_active_savepoints) {
       throw new TransactionOutOfOrderException();
     }
@@ -300,6 +303,7 @@ class Connection extends BaseMySqlConnection {
    * {@inheritdoc}
    */
   protected function doCommit() {
+//dump(['doCommit']);
     // MySQL will automatically commit transactions when tables are altered or
     // created (DDL transactions are not supported). Prevent triggering an
     // exception in this case as all statements have been committed.
