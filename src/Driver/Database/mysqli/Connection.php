@@ -264,7 +264,8 @@ dump(['rollBack 2', $savepoint, $savepoint_name, $this->transactionLayers]);
           break;
         }
 dump($this->query('SELECT * FROM {test}')->fetchAll());
-        $success = $this->connection->rollback(0, $savepoint);
+//        $success = $this->connection->rollback(0, $savepoint);
+        $success = $this->connection->rollback();
 dump(['rollBack 3', $savepoint, $savepoint_name, $this->transactionLayers, $success]);
 dump($this->query('SELECT * FROM {test}')->fetchAll());
         $this->popCommittableTransactions();
