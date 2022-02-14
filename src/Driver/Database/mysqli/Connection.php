@@ -189,13 +189,15 @@ class Connection extends BaseMySqlConnection {
     // If we're already in a transaction then we want to create a savepoint
     // rather than try to create another transaction.
     if ($this->inTransaction()) {
+dump(['pushTransaction savepoint', $name]);
       $this->connection->savepoint($name);
     }
     else {
+dump(['pushTransaction begin_transaction', $name]);
       $this->connection->begin_transaction(0, $name);
     }
     $this->transactionLayers[$name] = $name;
-dump(['pushTransaction', $this->transactionLayers]);
+dump(['pushTransaction out', $this->transactionLayers]);
   }
 
   /**
