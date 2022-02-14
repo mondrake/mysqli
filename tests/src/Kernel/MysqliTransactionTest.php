@@ -158,27 +158,27 @@ class MysqliTransactionTest extends TransactionTestBase {
     $this->assertRowPresent('inner-after-outer-commit');
 
     // Rollback the inner transaction.
-dump('*********************************** start');
+//dump('*********************************** start');
     $this->cleanUp();
-dump('*** outer start');
+//dump('*** outer start');
     $transaction = $this->connection->startTransaction();
     $this->insertRow('outer');
-dump('*** inner start');
+//dump('*** inner start');
     $transaction2 = $this->connection->startTransaction();
     $this->insertRow('inner');
     // Now rollback the inner transaction.
-dump('*** inner rollback');
+//dump('*** inner rollback');
     $transaction2->rollBack();
-dump('*** inner unset');
+//dump('*** inner unset');
     unset($transaction2);
     $this->assertTrue($this->connection->inTransaction(), 'Still in a transaction after popping the outer transaction');
     // Pop the outer transaction, it should commit.
     $this->insertRow('outer-after-inner-rollback');
-dump($this->connection->query('SELECT * FROM {test}')->fetchAll());
-dump('*** outer unset');
+//dump($this->connection->query('SELECT * FROM {test}')->fetchAll());
+//dump('*** outer unset');
     unset($transaction);
-dump($this->connection->query('SELECT * FROM {test}')->fetchAll());
-dump('*********************************** end');
+//dump($this->connection->query('SELECT * FROM {test}')->fetchAll());
+//dump('*********************************** end');
     $this->assertFalse($this->connection->inTransaction(), 'Transaction closed after popping the inner transaction');
     $this->assertRowPresent('outer');
     $this->assertRowAbsent('inner');
