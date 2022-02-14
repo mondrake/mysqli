@@ -263,10 +263,10 @@ dump(['rollBack', $savepoint_name, $this->transactionLayers]);
 dump(['rollBack 2', $savepoint, $savepoint_name, $this->transactionLayers]);
           break;
         }
-dump($this->connection->query('SELECT * FROM {test}')->fetchAll());
+dump($this->query('SELECT * FROM {test}')->fetchAll());
         $success = $this->connection->rollback(0, $savepoint);
 dump(['rollBack 3', $savepoint, $savepoint_name, $this->transactionLayers, $success]);
-dump($this->connection->query('SELECT * FROM {test}')->fetchAll());
+dump($this->query('SELECT * FROM {test}')->fetchAll());
         $this->popCommittableTransactions();
         if ($rolled_back_other_active_savepoints) {
           throw new TransactionOutOfOrderException();
