@@ -214,10 +214,13 @@ dump(['popCommittableTransactions in', $this->transactionLayers]);
       // If there are no more layers left then we should commit.
       unset($this->transactionLayers[$name]);
       if (empty($this->transactionLayers)) {
+dump(['popCommittableTransactions 1', $name]);
         $this->doCommit();
       }
       else {
+dump(['popCommittableTransactions 2', $name]);
         if (!$this->connection->release_savepoint($name)) {
+dump(['popCommittableTransactions 3', $name]);
           $this->transactionLayers = [];
           $this->doCommit();
         }
