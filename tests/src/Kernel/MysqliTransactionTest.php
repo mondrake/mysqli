@@ -158,7 +158,7 @@ class MysqliTransactionTest extends TransactionTestBase {
     $this->assertRowPresent('inner-after-outer-commit');
 
     // Rollback the inner transaction.
-dump('***********************************');
+dump('*********************************** start');
     $this->cleanUp();
 dump('*** outer start');
     $transaction = $this->connection->startTransaction();
@@ -176,6 +176,7 @@ dump('*** inner unset');
     $this->insertRow('outer-after-inner-rollback');
 dump('*** outer unset');
     unset($transaction);
+dump('*********************************** end');
     $this->assertFalse($this->connection->inTransaction(), 'Transaction closed after popping the inner transaction');
     $this->assertRowPresent('outer');
     $this->assertRowAbsent('inner');
