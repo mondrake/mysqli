@@ -18,3 +18,4 @@ Known issues
 - Apparently, `mysqli::rollback(0, 'savepoint-1')` does not respect the savepoint passed in, and rolls back the entire
   transaction. I had to revert to using `mysqli::query('ROLLBACK TO SAVEPOINT savepoint-1')` to get transaction tests
   pass. Could not find reported bugs for this.
+
