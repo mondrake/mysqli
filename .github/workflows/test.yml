@@ -58,7 +58,7 @@ jobs:
         with:
           php-version: "${{ matrix.php-version }}"
           coverage: "none"
-          extensions: "mysqli"
+          extensions: "mysqli, apcu"
           ini-values: "zend.assertions=1"
 
       - name: Checkout Drupal
