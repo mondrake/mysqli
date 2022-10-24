@@ -1,32 +1,17 @@
 <?php
 
-namespace Drupal\Tests\mysqli\Kernel;
+namespace Drupal\Tests\mysqli\Kernel\mysqli;
 
+use Drupal\KernelTests\Core\Database\DriverSpecificTransactionTestBase;
 use PHPUnit\Framework\Error\Warning;
-use Drupal\KernelTests\Core\Database\TransactionTest;
 
 /**
- * Tests the transaction abstraction system.
- *
- * We test nesting by having two transaction layers, an outer and inner. The
- * outer layer encapsulates the inner layer. Our transaction nesting abstraction
- * should allow the outer layer function to call any function it wants,
- * especially the inner layer that starts its own transaction, and be
- * confident that, when the function it calls returns, its own transaction
- * is still "alive."
- *
- * Call structure:
- *   transactionOuterLayer()
- *     Start transaction
- *     transactionInnerLayer()
- *       Start transaction (does nothing in database)
- *       [Maybe decide to roll back]
- *     Do more stuff
- *     Should still be in transaction A
+ * Tests transaction for the MySQL driver.
  *
  * @group Database
  */
-class MysqliTransactionTest extends TransactionTest {
+class TransactionTest extends DriverSpecificTransactionTestBase {
+
   /**
    * Tests the compatibility of transactions with DDL statements.
    */
