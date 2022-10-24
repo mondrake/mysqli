@@ -11,8 +11,7 @@ env:
     BROWSERTEST_OUTPUT_DIRECTORY: "sites/default/files/simpletest"
     MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu","--headless", "--no-sandbox"]}}, "http://localhost:4444"]'
     PHPUNIT_SKIP_CLASS: '[
-      "Drupal\\KernelTests\\Core\\Database\\SqlModeTest",
-      "Drupal\\KernelTests\\Core\\Database\\TransactionTest"
+      "Drupal\\KernelTests\\Core\\Cache\\ApcuBackendTest"
     ]'
 
 jobs:
@@ -28,7 +27,6 @@ jobs:
     strategy:
       matrix:
         php-version:
-#          - "8.0"
           - "8.1"
 
     services:
@@ -62,7 +60,7 @@ jobs:
           ini-values: "zend.assertions=1"
 
       - name: Checkout Drupal
-        run: git clone --depth=5 --branch=10.0.x http://git.drupal.org/project/drupal.git .
+        run: git clone --depth=5 --branch=10.1.x http://git.drupal.org/project/drupal.git .
 
       - name: Checkout mysqli module
         uses: actions/checkout@v2
