@@ -63,7 +63,7 @@ jobs:
         run: git clone --depth=5 --branch=10.1.x http://git.drupal.org/project/drupal.git .
 
       - name: Checkout mysqli module
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: mysqli_staging
 
@@ -100,3 +100,8 @@ jobs:
 #        run: |
 #          vendor/bin/phpunit -v -c core --color=always modules/contrib/mysqli/tests/src/Kernel/MysqliTransactionTest.php
 #          vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/TransactionTest.php
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: test-results
+          path: sites/simpletest/browser_output
