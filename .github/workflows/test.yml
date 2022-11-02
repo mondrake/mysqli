@@ -28,6 +28,15 @@ jobs:
       matrix:
         php-version:
           - "8.1"
+        test-args:
+          - "--group Database"
+          - "-v --group Cache"
+          - "-v --group Config"
+          - "-v --group Entity"
+          - "-v --group Installer"
+#          - "--group field,Field"
+#          - "--group file"
+#          - "--group views"
 
     services:
       mysql:
@@ -97,7 +106,7 @@ jobs:
 
       - name: Run tests
         continue-on-error: true
-        run: vendor/bin/phpunit -v -c core --color=always --group Database,Cache,Config
+        run: vendor/bin/phpunit -v -c core --color=always ${{ matrix.test-args }}
 #        run: |
 #          vendor/bin/phpunit -v -c core --color=always modules/contrib/mysqli/tests/src/Kernel/MysqliTransactionTest.php
 #          vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/TransactionTest.php
