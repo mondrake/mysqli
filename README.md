@@ -11,6 +11,8 @@ Issue              | Description
 #3110546           | Allow contributed modules (mostly database drivers) to override tests in core |
 #3256642           | Autoload classes of database drivers modules' dependencies |
 
+Minimum PHP version: 8.1.3
+
 Known issues
 ------------
 - `mysqli::rollback()` returns TRUE if there's no active transaction. This is diverging from PDO MySql. `TransactionTest::testTransactionWithDdlStatement()`
