@@ -2,6 +2,9 @@
 
 namespace Drupal\Tests\mysqli\Kernel\mysqli;
 
+use Drupal\Component\Utility\Environment;
+use Drupal\Core\Database\Database;
+use Drupal\Core\Database\DatabaseException;
 use Drupal\Tests\mysql\Kernel\mysql\LargeQueryTest as BaseMySqlTest;
 
 /**
