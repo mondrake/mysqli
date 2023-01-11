@@ -111,7 +111,7 @@ jobs:
 #          vendor/bin/phpunit -v -c core --color=always modules/contrib/mysqli/tests/src/Kernel/MysqliTransactionTest.php
 #          vendor/bin/phpunit -v -c core --color=always core/tests/Drupal/KernelTests/Core/Database/TransactionTest.php
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: test-results
           path: sites/simpletest/browser_output
