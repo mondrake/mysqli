@@ -10,4 +10,12 @@ use Drupal\Tests\mysql\Kernel\mysql\ConnectionUnitTest as BaseMySqlTest;
  * @group Database
  */
 class ConnectionUnitTest extends BaseMySqlTest {
+
+  /**
+   * Tests pdo options override.
+   */
+  public function testConnectionOpen() {
+    $this->markTestSkipped('mysqli is not a pdo driver.');
+  }
+
 }
