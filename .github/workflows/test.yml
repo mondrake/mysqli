@@ -89,7 +89,6 @@ jobs:
           composer require "mondrake/mysqli:dev-test-run-branch" --no-progress --ansi
 
       - name: Install Drupal
-        continue-on-error: true
         run: |
           cp mysqli_staging/tests/github/install_* .
           # Install via Drush.
@@ -105,7 +104,6 @@ jobs:
           sleep 1s
 
       - name: Run tests
-        continue-on-error: true
         run: vendor/bin/phpunit -c core --color=always ${{ matrix.test-args }}
 
       - uses: actions/upload-artifact@v3
