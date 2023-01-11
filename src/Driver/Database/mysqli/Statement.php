@@ -137,16 +137,6 @@ class Statement extends StatementWrapper {
   }
 
   /**
-   * @todo
-   *
-   * Temporary before PHP 8.1.2, otherwise no way to retrieve SQLState from the
-   * mysqli_sql_exception.
-   */
-  public function getSqlState() {
-    return $this->clientStatement ? $this->clientStatement->sqlstate : '00000';
-  }
-
-  /**
    * {@inheritdoc}
    */
   public function getQueryString() {
