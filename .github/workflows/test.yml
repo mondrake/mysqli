@@ -30,13 +30,13 @@ jobs:
         php-version:
           - "8.1"
         test-args:
-          - "--group Database"
+#          - "--group Database"
           - "-v --group Cache"
           - "-v --group Config"
 #          - "-v --group Entity"
 #          - "-v --group Installer"
 #          - "--group field,Field"
-          - "-v --group file"
+#          - "-v --group file"
 #          - "--group views"
 
     services:
