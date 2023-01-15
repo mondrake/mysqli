@@ -109,4 +109,13 @@ class Tasks extends BaseInstallTasks {
     return TRUE;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getFormOptions(array $database) {
+    $form = parent::getFormOptions($database);
+dump($form);
+    return $form;
+  }
+
 }
