@@ -25,6 +25,7 @@ jobs:
         SIMPLETEST_DB: "mysqli://root:@0.0.0.0/drupal_db?module=mysqli#d10t"
 
     strategy:
+      fail-fast: false
       matrix:
         php-version:
           - "8.1"
