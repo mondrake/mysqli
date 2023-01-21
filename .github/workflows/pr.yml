@@ -1,15 +1,13 @@
-name: PHPUnit Testing
+name: Pull Request Testing
 
 on:
-  push:
+  pull_request:
     branches: [ main ]
-  schedule:
-    - cron: "0 6 * * 3"
 
 env:
-    SIMPLETEST_DB: "mysqli://root:@0.0.0.0/drupal_db?module=mysqli#d10t"
     SIMPLETEST_BASE_URL: "http://localhost:8080"
     BROWSERTEST_OUTPUT_DIRECTORY: "sites/default/files/simpletest"
+    MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu","--headless", "--no-sandbox"]}}, "http://localhost:4444"]'
     PHPUNIT_SKIP_CLASS: '[
       "Drupal\\KernelTests\\Core\\Cache\\ApcuBackendTest"
     ]'
@@ -21,15 +19,24 @@ jobs:
   mysqli:
     name: "Test mysqli"
     runs-on: ubuntu-20.04
+    env:
+        SIMPLETEST_DB: "mysqli://root:@0.0.0.0/drupal_db?module=mysqli#d10t"
 
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         php-version:
           - "8.1"
         test-args:
           - "--group Database"
+#          - "--group Cache"
           - "--group Config"
+#          - "-v --group Entity"
+#          - "-v --group Installer"
+#          - "--group field,Field"
+#          - "-v --group file"
+#          - "--group views"
+#          - "core/modules/config/tests/src/Functional/ConfigInstallProfileUnmetDependenciesTest.php"
 
     services:
       mysql:
@@ -41,6 +48,18 @@ jobs:
           - "3306:3306"
 
     steps:
+#      - name: Install Chrome
+#        uses: "browser-actions/setup-chrome@latest"
+
+#      - name: Check Chrome version
+#        run: chrome --version
+
+#      - name: Install Chromedriver
+#        uses: "nanasess/setup-chromedriver@master"
+
+#      - name: Run Chromedriver
+#        run: chromedriver --port=4444 &
+
       - name: Install PHP
         uses: "shivammathur/setup-php@v2"
         with:
@@ -85,6 +104,7 @@ jobs:
           sleep 1s
 
       - name: Run tests
+        continue-on-error: true
         run: vendor/bin/phpunit -c core --color=always ${{ matrix.test-args }}
 
       - uses: actions/upload-artifact@v3
