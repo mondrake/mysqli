@@ -109,22 +109,4 @@ class Tasks extends BaseInstallTasks {
     return TRUE;
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getFormOptions(array $database) {
-    $form = parent::getFormOptions($database);
-// todo sort this out upstream
-    $form['dependencies']['mysql']['namespace'] = [
-      '#type' => 'textarea',
-      '#default_value' => 'Drupal\\mysql',
-    ];
-    $form['dependencies']['mysql']['autoload'] = [
-      '#type' => 'textarea',
-      '#default_value' => '',
-    ];
-//dump($form);
-    return $form;
-  }
-
 }
