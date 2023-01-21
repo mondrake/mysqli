@@ -4,4 +4,7 @@
 curl https://git.drupalcode.org/project/drupal/-/merge_requests/291.diff | git apply -v
 
 #3256642 Autoload classes of database drivers modules' dependencies
-curl https://git.drupalcode.org/project/drupal/-/merge_requests/2844.diff | git apply -v
+curl https://git.drupalcode.org/project/drupal/-/merge_requests/3169.diff | git apply -v
+
+# Extra patch
+#git apply -v ./mysqli_staging/tests/github/extra_patch.patch
