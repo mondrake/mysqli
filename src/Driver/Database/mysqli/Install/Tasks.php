@@ -115,11 +115,11 @@ class Tasks extends BaseInstallTasks {
   public function getFormOptions(array $database) {
     $form = parent::getFormOptions($database);
     $form['dependencies']['mysql']['namespace'] = [
-      '#type' => 'hidden',
+      '#type' => 'textarea',
       '#default_value' => 'Drupal\\mysql',
     ];
     $form['dependencies']['mysql']['autoload'] = [
-      '#type' => 'hidden',
+      '#type' => 'textarea',
       '#default_value' => '',
     ];
 //dump($form);
