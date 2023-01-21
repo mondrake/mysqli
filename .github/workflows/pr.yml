@@ -28,11 +28,11 @@ jobs:
         php-version:
           - "8.1"
         test-args:
-          - "--group Database"
-#          - "--group Cache"
-          - "--group Config"
-#          - "-v --group Entity"
-#          - "-v --group Installer"
+#          - "--group Database"
+          - "--group Cache"
+#          - "--group Config"
+          - "-v --group Entity"
+          - "-v --group Installer"
 #          - "--group field,Field"
 #          - "-v --group file"
 #          - "--group views"
