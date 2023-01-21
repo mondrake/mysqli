@@ -32,7 +32,8 @@ jobs:
         test-args:
 #          - "--group Database"
 #          - "--group Cache"
-          - "--group Config"
+          - "core/modules/config/tests/src/Functional/ConfigInstallProfileUnmetDependenciesTest.php"
+#          - "--group Config"
 #          - "-v --group Entity"
 #          - "-v --group Installer"
 #          - "--group field,Field"

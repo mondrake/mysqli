@@ -114,7 +114,7 @@ class Tasks extends BaseInstallTasks {
    */
   public function getFormOptions(array $database) {
     $form = parent::getFormOptions($database);
-dump($form);
+//dump($form);
     return $form;
   }
 

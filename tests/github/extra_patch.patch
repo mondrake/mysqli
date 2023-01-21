@@ -1,0 +1,20 @@
+diff --git a/core/modules/config/tests/src/Functional/ConfigInstallProfileUnmetDependenciesTest.php b/core/modules/config/tests/src/Functional/ConfigInstallProfileUnmetDependenciesTest.php
+index c459f15250..12a445e7f8 100644
+--- a/core/modules/config/tests/src/Functional/ConfigInstallProfileUnmetDependenciesTest.php
++++ b/core/modules/config/tests/src/Functional/ConfigInstallProfileUnmetDependenciesTest.php
+@@ -49,12 +49,12 @@ protected function prepareEnvironment() {
+   protected function setUp(): void {
+     // During set up an UnmetDependenciesException should be thrown, which will
+     // be re-thrown by TestHttpClientMiddleware as a standard Exception.
+-    try {
++//    try {
+       parent::setUp();
+-    }
++/*    }
+     catch (\Exception $exception) {
+       $this->expectedException = $exception;
+-    }
++    }*/
+   }
+ 
+   /**
