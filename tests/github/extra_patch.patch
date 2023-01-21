@@ -18,15 +18,17 @@ index c459f15250..12a445e7f8 100644
    }
  
    /**
-diff --git a/core/tests/Drupal/Tests/UiHelperTrait.php b/core/tests/Drupal/Tests/UiHelperTrait.php
-index be7a0c7c1a..cf6570ca07 100644
---- a/core/tests/Drupal/Tests/UiHelperTrait.php
-+++ b/core/tests/Drupal/Tests/UiHelperTrait.php
-@@ -80,6 +80,7 @@ protected function submitForm(array $edit, $submit, $form_html_id = NULL) {
-     }
- 
-     // Edit the form values.
+diff --git a/core/tests/Drupal/FunctionalTests/Installer/InstallerTestBase.php b/core/tests/Drupal/FunctionalTests/Installer/InstallerTestBase.php
+index 6ec3919d6a..9cb589eb82 100644
+--- a/core/tests/Drupal/FunctionalTests/Installer/InstallerTestBase.php
++++ b/core/tests/Drupal/FunctionalTests/Installer/InstallerTestBase.php
+@@ -255,7 +255,9 @@ protected function setUpProfile() {
+    * Installer step: Configure settings.
+    */
+   protected function setUpSettings() {
++dump($this->parameters['forms']['install_settings_form']);
+     $edit = $this->translatePostValues($this->parameters['forms']['install_settings_form']);
 +dump($edit);
-     foreach ($edit as $name => $value) {
-       $field = $assert_session->fieldExists($name, $form);
+     $this->submitForm($edit, $this->translations['Save and continue']);
+   }
  
