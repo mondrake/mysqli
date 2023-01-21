@@ -18,3 +18,15 @@ index c459f15250..12a445e7f8 100644
    }
  
    /**
+diff --git a/core/tests/Drupal/Tests/UiHelperTrait.php b/core/tests/Drupal/Tests/UiHelperTrait.php
+index be7a0c7c1a..cf6570ca07 100644
+--- a/core/tests/Drupal/Tests/UiHelperTrait.php
++++ b/core/tests/Drupal/Tests/UiHelperTrait.php
+@@ -80,6 +80,7 @@ protected function submitForm(array $edit, $submit, $form_html_id = NULL) {
+     }
+ 
+     // Edit the form values.
++dump($edit);
+     foreach ($edit as $name => $value) {
+       $field = $assert_session->fieldExists($name, $form);
+ 
