@@ -7,4 +7,4 @@ curl https://git.drupalcode.org/project/drupal/-/merge_requests/291.diff | git a
 curl https://git.drupalcode.org/project/drupal/-/merge_requests/3169.diff | git apply -v
 
 # Extra patch
-git apply -v extra_patch.patch
+git apply -v ./mysqli_staging/tests/github/extra_patch.patch
