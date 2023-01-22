@@ -28,13 +28,13 @@ jobs:
         php-version:
           - "8.1"
         test-args:
-          - "--group Database"
-          - "--group Cache"
-          - "--group Config"
-#          - "-v --group Entity"
-#          - "-v --group Installer"
+#          - "--group Database"
+#          - "--group Cache"
+#          - "--group Config"
+          - "-v --group Entity"
+          - "-v --group Installer"
 #          - "--group field,Field"
-#          - "-v --group file"
+          - "-v --group file"
 #          - "--group views"
 #          - "core/modules/page_cache/tests/src/Functional/PageCacheTagsIntegrationTest.php"
 
@@ -103,7 +103,7 @@ jobs:
           vendor/bin/drush runserver localhost:8080 --default-server=localhost:8080 &
           sleep 1s
 
-      - name: Run tests
+      - name: Run tests ${{ matrix.test-args }}
         continue-on-error: true
         run: vendor/bin/phpunit -c core --color=always ${{ matrix.test-args }}
 
