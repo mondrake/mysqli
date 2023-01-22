@@ -143,7 +143,6 @@ class Connection extends BaseMySqlConnection {
 
     $connection_options['init_commands'] += [
       'sql_mode' => "SET sql_mode = 'ANSI,TRADITIONAL'",
-//      'tx_isolation_level' => "SET GLOBAL TRANSACTION ISOLATION LEVEL REPEATABLE READ",
     ];
 
     // Execute initial commands.
@@ -186,22 +185,22 @@ class Connection extends BaseMySqlConnection {
    * {@inheritdoc}
    */
   public function pushTransaction($name) {
-global $xxx; if ($xxx) dump(['pushTransaction in', $name]);
+// global $xxx; if ($xxx) dump(['pushTransaction in', $name]);
     if (isset($this->transactionLayers[$name])) {
       throw new TransactionNameNonUniqueException($name . " is already in use.");
     }
     // If we're already in a transaction then we want to create a savepoint
     // rather than try to create another transaction.
     if ($this->inTransaction()) {
-if ($xxx) dump(['pushTransaction savepoint', $name]);
+// if ($xxx) dump(['pushTransaction savepoint', $name]);
       $this->connection->savepoint($name);
     }
     else {
-if ($xxx) dump(['pushTransaction begin_transaction', $name]);
+// if ($xxx) dump(['pushTransaction begin_transaction', $name]);
       $this->connection->begin_transaction(0, $name);
     }
     $this->transactionLayers[$name] = $name;
-if ($xxx) dump(['pushTransaction out', $this->transactionLayers]);
+// if ($xxx) dump(['pushTransaction out', $this->transactionLayers]);
   }
 
   /**
@@ -211,7 +210,7 @@ if ($xxx) dump(['pushTransaction out', $this->transactionLayers]);
    * need to use direct rollback on the connection.
    */
   protected function popCommittableTransactions() {
-global $xxx; if ($xxx) dump(['popCommittableTransactions in', $this->transactionLayers]);
+// global $xxx; if ($xxx) dump(['popCommittableTransactions in', $this->transactionLayers]);
     // Commit all the committable layers.
     foreach (array_reverse($this->transactionLayers) as $name => $active) {
       // Stop once we found an active transaction.
@@ -234,7 +233,7 @@ global $xxx; if ($xxx) dump(['popCommittableTransactions in', $this->transaction
         }
       }
     }
-if ($xxx) dump(['popCommittableTransactions out', $this->transactionLayers]);
+// if ($xxx) dump(['popCommittableTransactions out', $this->transactionLayers]);
   }
 
   /**
@@ -244,7 +243,7 @@ if ($xxx) dump(['popCommittableTransactions out', $this->transactionLayers]);
    * need to use direct rollback on the connection.
    */
   public function rollBack($savepoint_name = 'drupal_transaction') {
-global $xxx; if ($xxx) dump(['rollBack in', $savepoint_name, $this->transactionLayers]);
+// global $xxx; if ($xxx) dump(['rollBack in', $savepoint_name, $this->transactionLayers]);
     if (!$this->inTransaction()) {
       throw new TransactionNoActiveException();
     }
@@ -282,7 +281,7 @@ global $xxx; if ($xxx) dump(['rollBack in', $savepoint_name, $this->transactionL
 //dump(['rollBack 4', $savepoint, $savepoint_name, $this->transactionLayers]);
         $rolled_back_other_active_savepoints = TRUE;
       }
-if ($xxx) dump(['rollBack out', $savepoint_name, $this->transactionLayers]);
+// if ($xxx) dump(['rollBack out', $savepoint_name, $this->transactionLayers]);
     }
 
     // Notify the callbacks about the rollback.
@@ -325,30 +324,6 @@ if ($xxx) dump(['rollBack out', $savepoint_name, $this->transactionLayers]);
     if (!$success) {
       throw new TransactionCommitFailedException();
     }
-/*global $xxx; if ($xxx) dump(['doCommit in']);
-    // MySQL will automatically commit transactions when tables are altered or
-    // created (DDL transactions are not supported). Prevent triggering an
-    // exception in this case as all statements have been committed.
-    // mysqli does not detect if a transaction is active so we need to rely on
-    // internals.
-    if ($this->inTransaction()) {
-      $success = BaseConnection::doCommit();
-    }
-    else {
-      // Process the post-root (non-nested) transaction commit callbacks. The
-      // following code is copied from
-      // \Drupal\Core\Database\Connection::doCommit()
-      $success = TRUE;
-      if (!empty($this->rootTransactionEndCallbacks)) {
-        $callbacks = $this->rootTransactionEndCallbacks;
-        $this->rootTransactionEndCallbacks = [];
-        foreach ($callbacks as $callback) {
-          call_user_func($callback, $success);
-        }
-      }
-    }
-if ($xxx) dump(['doCommit out', $success]);
-    return $success;*/
   }
 
   /**
@@ -374,7 +349,4 @@ if ($xxx) dump(['doCommit out', $success]);
     ];
   }
 
-  public function freakout() {
-    $this->connection->commit();
-  }
 }

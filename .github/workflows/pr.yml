@@ -30,7 +30,7 @@ jobs:
         test-args:
           - "--group Database"
           - "--group Cache"
-#          - "--group Config"
+          - "--group Config"
 #          - "-v --group Entity"
 #          - "-v --group Installer"
 #          - "--group field,Field"
