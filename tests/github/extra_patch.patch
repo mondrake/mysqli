@@ -1,18 +1,12 @@
-diff --git a/core/tests/Drupal/FunctionalTests/Installer/InstallerTestBase.php b/core/tests/Drupal/FunctionalTests/Installer/InstallerTestBase.php
-index 6ec3919d6a..4f3a1b6856 100644
---- a/core/tests/Drupal/FunctionalTests/Installer/InstallerTestBase.php
-+++ b/core/tests/Drupal/FunctionalTests/Installer/InstallerTestBase.php
-@@ -255,7 +255,12 @@ protected function setUpProfile() {
-    * Installer step: Configure settings.
-    */
-   protected function setUpSettings() {
--    $edit = $this->translatePostValues($this->parameters['forms']['install_settings_form']);
-+dump($this->parameters['forms']['install_settings_form']);
-+    $parameters = $this->parameters['forms']['install_settings_form'];
-+    $driver = $parameters['driver'];
-+    unset($parameters[$driver]['dependencies']);
-+    $edit = $this->translatePostValues($parameters);
-+dump($edit);
-     $this->submitForm($edit, $this->translations['Save and continue']);
-   }
+diff --git a/core/modules/page_cache/tests/src/Functional/PageCacheTagsIntegrationTest.php b/core/modules/page_cache/tests/src/Functional/PageCacheTagsIntegrationTest.php
+index 7c127fe41b..3a8689cdcf 100644
+--- a/core/modules/page_cache/tests/src/Functional/PageCacheTagsIntegrationTest.php
++++ b/core/modules/page_cache/tests/src/Functional/PageCacheTagsIntegrationTest.php
+@@ -84,6 +84,7 @@ public function testPageCacheTags() {
+     ];
  
+     // Full node page 1.
++global $xxx; $xxx=TRUE;
+     $this->assertPageCacheContextsAndTags($node_1->toUrl(), $cache_contexts, [
+       'http_response',
+       'rendered',
