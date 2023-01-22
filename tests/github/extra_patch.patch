@@ -11,10 +11,18 @@ index 7c127fe41b..3a8689cdcf 100644
        'http_response',
        'rendered',
 diff --git a/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php b/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php
-index fefd3a462b..37c4f8fb88 100644
+index fefd3a462b..6f5f0ef3b2 100644
 --- a/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php
 +++ b/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php
-@@ -73,6 +73,7 @@ protected function assertPageCacheContextsAndTags(Url $url, array $expected_cont
+@@ -3,6 +3,7 @@
+ namespace Drupal\Tests\system\Functional\Cache;
+ 
+ use Drupal\Core\Cache\Cache;
++use Drupal\Core\Database\Database;
+ use Drupal\Core\Url;
+ 
+ /**
+@@ -73,6 +74,7 @@ protected function assertPageCacheContextsAndTags(Url $url, array $expected_cont
      sort($expected_tags);
  
      // Assert cache miss + expected cache contexts + tags.
