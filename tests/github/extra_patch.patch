@@ -11,7 +11,7 @@ index 7c127fe41b..3a8689cdcf 100644
        'http_response',
        'rendered',
 diff --git a/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php b/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php
-index fefd3a462b..3674c0d245 100644
+index fefd3a462b..fc1c1970bf 100644
 --- a/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php
 +++ b/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php
 @@ -3,6 +3,7 @@
@@ -26,7 +26,7 @@ index fefd3a462b..3674c0d245 100644
      sort($expected_tags);
  
      // Assert cache miss + expected cache contexts + tags.
-+global $xxx; if ($xxx) Database::closeConnection();
++global $xxx; // if ($xxx) Database::closeConnection();
 +if ($xxx) $this->fail('here');
      $this->drupalGet($absolute_url);
      $this->assertSession()->responseHeaderEquals('X-Drupal-Cache', 'MISS');
