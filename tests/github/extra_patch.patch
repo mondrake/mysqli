@@ -1,18 +1,33 @@
-diff --git a/core/tests/Drupal/FunctionalTests/Installer/InstallerTestBase.php b/core/tests/Drupal/FunctionalTests/Installer/InstallerTestBase.php
-index 6ec3919d6a..4f3a1b6856 100644
---- a/core/tests/Drupal/FunctionalTests/Installer/InstallerTestBase.php
-+++ b/core/tests/Drupal/FunctionalTests/Installer/InstallerTestBase.php
-@@ -255,7 +255,12 @@ protected function setUpProfile() {
-    * Installer step: Configure settings.
-    */
-   protected function setUpSettings() {
--    $edit = $this->translatePostValues($this->parameters['forms']['install_settings_form']);
-+dump($this->parameters['forms']['install_settings_form']);
-+    $parameters = $this->parameters['forms']['install_settings_form'];
-+    $driver = $parameters['driver'];
-+    unset($parameters[$driver]['dependencies']);
-+    $edit = $this->translatePostValues($parameters);
-+dump($edit);
-     $this->submitForm($edit, $this->translations['Save and continue']);
-   }
+diff --git a/core/modules/page_cache/tests/src/Functional/PageCacheTagsIntegrationTest.php b/core/modules/page_cache/tests/src/Functional/PageCacheTagsIntegrationTest.php
+index 7c127fe41b..3a8689cdcf 100644
+--- a/core/modules/page_cache/tests/src/Functional/PageCacheTagsIntegrationTest.php
++++ b/core/modules/page_cache/tests/src/Functional/PageCacheTagsIntegrationTest.php
+@@ -84,6 +84,7 @@ public function testPageCacheTags() {
+     ];
  
+     // Full node page 1.
++global $xxx; $xxx=TRUE;
+     $this->assertPageCacheContextsAndTags($node_1->toUrl(), $cache_contexts, [
+       'http_response',
+       'rendered',
+diff --git a/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php b/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php
+index fefd3a462b..7a2fe26a6d 100644
+--- a/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php
++++ b/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php
+@@ -3,6 +3,7 @@
+ namespace Drupal\Tests\system\Functional\Cache;
+ 
+ use Drupal\Core\Cache\Cache;
++use Drupal\Core\Database\Database;
+ use Drupal\Core\Url;
+ 
+ /**
+@@ -73,6 +74,8 @@ protected function assertPageCacheContextsAndTags(Url $url, array $expected_cont
+     sort($expected_tags);
+ 
+     // Assert cache miss + expected cache contexts + tags.
++global $xxx; // if ($xxx) Database::closeConnection();
++if ($xxx) Database::getConnection()->freakout();
+     $this->drupalGet($absolute_url);
+     $this->assertSession()->responseHeaderEquals('X-Drupal-Cache', 'MISS');
+     $this->assertCacheTags($expected_tags);
