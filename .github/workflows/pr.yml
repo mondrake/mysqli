@@ -28,15 +28,15 @@ jobs:
         php-version:
           - "8.1"
         test-args:
-#          - "--group Database"
-#          - "--group Cache"
+          - "--group Database"
+          - "--group Cache"
 #          - "--group Config"
 #          - "-v --group Entity"
 #          - "-v --group Installer"
 #          - "--group field,Field"
 #          - "-v --group file"
 #          - "--group views"
-          - "core/modules/page_cache/tests/src/Functional/PageCacheTagsIntegrationTest.php"
+#          - "core/modules/page_cache/tests/src/Functional/PageCacheTagsIntegrationTest.php"
 
     services:
       mysql:
