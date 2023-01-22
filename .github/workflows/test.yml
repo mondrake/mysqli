@@ -31,6 +31,8 @@ jobs:
           - "--group Database"
           - "--group Cache"
           - "--group Config"
+          - "--group Entity"
+          - "--group file"
 
     services:
       mysql:
@@ -85,7 +87,7 @@ jobs:
           vendor/bin/drush runserver localhost:8080 --default-server=localhost:8080 &
           sleep 1s
 
-      - name: Run tests
+      - name: Run tests ${{ matrix.test-args }}
         run: vendor/bin/phpunit -c core --color=always ${{ matrix.test-args }}
 
       - uses: actions/upload-artifact@v3
