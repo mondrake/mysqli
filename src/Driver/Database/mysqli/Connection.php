@@ -143,7 +143,7 @@ class Connection extends BaseMySqlConnection {
 
     $connection_options['init_commands'] += [
       'sql_mode' => "SET sql_mode = 'ANSI,TRADITIONAL'",
-      'tx_isolation_level' => "SET GLOBAL TRANSACTION ISOLATION LEVEL REPEATABLE READ",
+//      'tx_isolation_level' => "SET GLOBAL TRANSACTION ISOLATION LEVEL REPEATABLE READ",
     ];
 
     // Execute initial commands.
