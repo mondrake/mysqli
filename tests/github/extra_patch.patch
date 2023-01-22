@@ -11,14 +11,14 @@ index 7c127fe41b..3a8689cdcf 100644
        'http_response',
        'rendered',
 diff --git a/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php b/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php
-index fefd3a462b..2946306974 100644
+index fefd3a462b..37c4f8fb88 100644
 --- a/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php
 +++ b/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php
-@@ -69,6 +69,7 @@ protected function assertNoCacheContext($not_expected_cache_context) {
-    */
-   protected function assertPageCacheContextsAndTags(Url $url, array $expected_contexts, array $expected_tags) {
-     $absolute_url = $url->setAbsolute()->toString();
-+global $xxx; if ($xxx) dump([$absolute_url, $url]);
-     sort($expected_contexts);
+@@ -73,6 +73,7 @@ protected function assertPageCacheContextsAndTags(Url $url, array $expected_cont
      sort($expected_tags);
  
+     // Assert cache miss + expected cache contexts + tags.
++global $xxx; if ($xxx) Database::closeConnection();
+     $this->drupalGet($absolute_url);
+     $this->assertSession()->responseHeaderEquals('X-Drupal-Cache', 'MISS');
+     $this->assertCacheTags($expected_tags);
