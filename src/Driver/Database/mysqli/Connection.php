@@ -306,7 +306,26 @@ if ($xxx) dump(['rollBack out', $savepoint_name, $this->transactionLayers]);
    * {@inheritdoc}
    */
   protected function doCommit() {
-global $xxx; if ($xxx) dump(['doCommit in']);
+    try {
+      $this->connection->commit();
+      $success = TRUE;
+    }
+    catch (\mysqli_sql_exception $e) {
+      $success = FALSE;
+    }
+
+    if (!empty($this->rootTransactionEndCallbacks)) {
+      $callbacks = $this->rootTransactionEndCallbacks;
+      $this->rootTransactionEndCallbacks = [];
+      foreach ($callbacks as $callback) {
+        call_user_func($callback, $success);
+      }
+    }
+
+    if (!$success) {
+      throw new TransactionCommitFailedException();
+    }
+/*global $xxx; if ($xxx) dump(['doCommit in']);
     // MySQL will automatically commit transactions when tables are altered or
     // created (DDL transactions are not supported). Prevent triggering an
     // exception in this case as all statements have been committed.
@@ -329,7 +348,7 @@ global $xxx; if ($xxx) dump(['doCommit in']);
       }
     }
 if ($xxx) dump(['doCommit out', $success]);
-    return $success;
+    return $success;*/
   }
 
   /**
