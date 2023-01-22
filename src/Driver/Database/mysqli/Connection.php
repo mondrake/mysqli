@@ -355,4 +355,7 @@ if ($xxx) dump(['doCommit out', $success]);
     ];
   }
 
+  public function freakout() {
+    $this->connection->commit();
+  }
 }
