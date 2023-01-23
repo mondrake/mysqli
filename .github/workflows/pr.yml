@@ -29,13 +29,10 @@ jobs:
           - "8.1"
         test-args:
 #          - "--group Database"
-#          - "--group Cache"
-#          - "--group Config"
-          - "-v --group Entity"
-          - "-v --group Installer"
-#          - "--group field,Field"
-          - "-v --group file"
-#          - "--group views"
+          - "--group Installer"
+          - "--group field,Field"
+          - "--group File"
+          - "-v --group views"
 #          - "core/modules/page_cache/tests/src/Functional/PageCacheTagsIntegrationTest.php"
 
     services:
