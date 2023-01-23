@@ -33,6 +33,8 @@ jobs:
           - "--group Config"
           - "--group Entity"
           - "--group file"
+          - "--group field,Field"
+          - "--group views"
 
     services:
       mysql:
