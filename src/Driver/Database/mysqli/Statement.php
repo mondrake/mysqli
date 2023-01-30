@@ -13,29 +13,21 @@ class Statement extends StatementWrapper {
 
   /**
    * The mysqli client connection.
-   *
-   * @var \mysqli
    */
   protected \mysqli $mysqliConnection;
 
   /**
    * The query string, in its form with placeholders.
-   *
-   * @var string
    */
   protected string $queryString;
 
   /**
    * Holds supplementary driver options.
-   *
-   * @var array
    */
   protected array $driverOpts;
 
   /**
    * Holds the index position of named parameters.
-   *
-   * @var array
    */
   protected array $paramsPositions;
 
@@ -44,8 +36,6 @@ class Statement extends StatementWrapper {
    *
    * See http://php.net/manual/pdo.constants.php for the definition of the
    * constants used.
-   *
-   * @var int
    */
   protected int $defaultFetchMode;
 
@@ -53,8 +43,6 @@ class Statement extends StatementWrapper {
    * The class to be used for returning row results.
    *
    * Used when fetch mode is \PDO::FETCH_CLASS.
-   *
-   * @var string
    */
   protected string $fetchClass;
 
@@ -62,8 +50,6 @@ class Statement extends StatementWrapper {
    * The mysqli result object.
    *
    * Stores results of a data selection query.
-   *
-   * @var \mysqli_result|null
    */
   protected ?\mysqli_result $mysqliResult;
 
