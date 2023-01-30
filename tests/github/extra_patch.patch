@@ -1,5 +1,5 @@
 diff --git a/core/lib/Drupal/Core/Database/StatementWrapper.php b/core/lib/Drupal/Core/Database/StatementWrapper.php
-index 32e0bf5825..cad4f99874 100644
+index 32e0bf5825..fbdd13256f 100644
 --- a/core/lib/Drupal/Core/Database/StatementWrapper.php
 +++ b/core/lib/Drupal/Core/Database/StatementWrapper.php
 @@ -366,6 +366,7 @@ protected function markResultsetFetchingComplete(): void {
@@ -34,25 +34,37 @@ index 32e0bf5825..cad4f99874 100644
      $this->fetch();
    }
  
-@@ -403,8 +407,10 @@ public function next(): void {
+@@ -402,6 +406,7 @@ public function next(): void {
+    * @internal This method should not be called directly.
     */
    public function valid(): bool {
++dump([__METHOD__, $this->isResultsetIterable, $this->resultsetKey]);
      if ($this->isResultsetIterable && $this->resultsetKey === -1) {
-+dump([__METHOD__, 'fetch']);
        $this->fetch();
      }
-+dump([__METHOD__, $this->isResultsetIterable]);
-     return $this->isResultsetIterable;
-   }
- 
 diff --git a/core/tests/Drupal/KernelTests/Core/Database/FetchTest.php b/core/tests/Drupal/KernelTests/Core/Database/FetchTest.php
-index 9368954cd2..ce055f4f5e 100644
+index 9368954cd2..7a9ec127ce 100644
 --- a/core/tests/Drupal/KernelTests/Core/Database/FetchTest.php
 +++ b/core/tests/Drupal/KernelTests/Core/Database/FetchTest.php
-@@ -30,169 +30,4 @@ public function testQueryFetchDefault() {
+@@ -15,37 +15,6 @@
+  */
+ class FetchTest extends DatabaseTestBase {
  
-     $this->assertCount(1, $records, 'There is only one record.');
-   }
+-  /**
+-   * Confirms that we can fetch a record properly in default object mode.
+-   */
+-  public function testQueryFetchDefault() {
+-    $records = [];
+-    $result = $this->connection->query('SELECT [name] FROM {test} WHERE [age] = :age', [':age' => 25]);
+-    $this->assertInstanceOf(StatementInterface::class, $result);
+-    foreach ($result as $record) {
+-      $records[] = $record;
+-      $this->assertIsObject($record);
+-      $this->assertSame('John', $record->name);
+-    }
+-
+-    $this->assertCount(1, $records, 'There is only one record.');
+-  }
 -
 -  /**
 -   * Confirms that we can fetch a record to an object explicitly.
@@ -69,22 +81,13 @@ index 9368954cd2..ce055f4f5e 100644
 -    $this->assertCount(1, $records, 'There is only one record.');
 -  }
 -
--  /**
--   * Confirms that we can fetch a record to an associative array explicitly.
--   */
--  public function testQueryFetchArray() {
--    $records = [];
--    $result = $this->connection->query('SELECT [name] FROM {test} WHERE [age] = :age', [':age' => 25], ['fetch' => \PDO::FETCH_ASSOC]);
--    foreach ($result as $record) {
--      $records[] = $record;
--      $this->assertIsArray($record);
--      $this->assertArrayHasKey('name', $record);
--      $this->assertSame('John', $record['name']);
--    }
--
--    $this->assertCount(1, $records, 'There is only one record.');
--  }
--
+   /**
+    * Confirms that we can fetch a record to an associative array explicitly.
+    */
+@@ -62,137 +31,4 @@ public function testQueryFetchArray() {
+     $this->assertCount(1, $records, 'There is only one record.');
+   }
+ 
 -  /**
 -   * Confirms that we can fetch a record into a new instance of a custom class.
 -   *
