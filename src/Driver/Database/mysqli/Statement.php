@@ -160,12 +160,15 @@ class Statement extends StatementWrapper {
 
       case \PDO::FETCH_NUM:
         $ret = array_values($row);
+        break;
 
       case \PDO::FETCH_BOTH:
         $ret = $row + array_values($row);
+        break;
 
       case \PDO::FETCH_OBJ:
         $ret = (object) $row;
+        break;
 
       case \PDO::FETCH_CLASS:
         $constructor_arguments = $this->fetchOptions['constructor_args'] ?? [];
@@ -174,6 +177,7 @@ class Statement extends StatementWrapper {
           $class_obj->$column = $value;
         }
         $ret = $class_obj;
+        break;
 
       case \PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE:
         $class = array_shift($row);
@@ -182,6 +186,7 @@ class Statement extends StatementWrapper {
           $class_obj->$column = $value;
         }
         $ret = $class_obj;
+        break;
 
       default:
           throw new DatabaseExceptionWrapper("Unknown fetch type '{$mode}'");
