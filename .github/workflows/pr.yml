@@ -29,8 +29,8 @@ jobs:
           - "8.1"
         test-args:
 #          - "core/tests/Drupal/KernelTests/Core/Database/SelectComplexTest.php"
-          - "core/tests/Drupal/KernelTests/Core/Database/FetchTest.php"
-#          - "--group Database"
+#          - "core/tests/Drupal/KernelTests/Core/Database/FetchTest.php"
+          - "--group Database"
 #          - "--group Installer"
 #          - "--group field,Field"
 #          - "--group File"
