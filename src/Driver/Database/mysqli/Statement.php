@@ -144,10 +144,7 @@ class Statement extends StatementWrapper {
 
     $mysqli_row = $this->mysqliResult->fetch_assoc();
 
-    if ($mysqli_row) {
-      $this->setCurrentResultsetRow($mysqli_row);
-    }
-    else {
+    if (!$mysqli_row) {
       $this->markResultsetFetchingComplete();
       return FALSE;
     }
@@ -158,16 +155,17 @@ class Statement extends StatementWrapper {
     }
     switch ($mode) {
       case \PDO::FETCH_ASSOC:
-        return $row;
+        $ret = $row;
+        break;
 
       case \PDO::FETCH_NUM:
-        return array_values($row);
+        $ret = array_values($row);
 
       case \PDO::FETCH_BOTH:
-        return $row + array_values($row);
+        $ret = $row + array_values($row);
 
       case \PDO::FETCH_OBJ:
-        return (object) $row;
+        $ret = (object) $row;
 
       case \PDO::FETCH_CLASS:
         $constructor_arguments = $this->fetchOptions['constructor_args'] ?? [];
@@ -175,7 +173,7 @@ class Statement extends StatementWrapper {
         foreach ($row as $column => $value) {
           $class_obj->$column = $value;
         }
-        return $class_obj;
+        $ret = $class_obj;
 
       case \PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE:
         $class = array_shift($row);
@@ -183,11 +181,14 @@ class Statement extends StatementWrapper {
         foreach ($row as $column => $value) {
           $class_obj->$column = $value;
         }
-        return $class_obj;
+        $ret = $class_obj;
 
       default:
           throw new DatabaseExceptionWrapper("Unknown fetch type '{$mode}'");
     }
+
+    $this->setCurrentResultsetRow($ret);
+    return $ret;
   }
 
   /**
