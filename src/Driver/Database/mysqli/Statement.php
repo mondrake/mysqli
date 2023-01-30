@@ -292,7 +292,6 @@ class Statement extends StatementWrapper {
       if ($this->mysqliConnection->info !== NULL) {
         $matches = [];
         if (preg_match('/\s(\d+)\s/', $this->mysqliConnection->info, $matches) === 1) {
-//dump(['******', $this->queryString, $this->mysqliConnection->info, $matches, $this->mysqliConnection->affected_rows]);
           return (int) $matches[0];
         }
         else {
@@ -321,3 +320,4 @@ class Statement extends StatementWrapper {
   }
 
 }
+//dump(['******', $this->queryString, $this->mysqliConnection->info, $matches, $this->mysqliConnection->affected_rows]);
