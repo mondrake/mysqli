@@ -2,16 +2,18 @@
 
 [![PHPUnit Testing](https://github.com/mondrake/mysqli/actions/workflows/test.yml/badge.svg)](https://github.com/mondrake/mysqli/actions/workflows/test.yml)
 
-Database driver for MySQLi.
+A Drupal database driver module for MySQLi.
 
-For Drupal 10, with patches for the following issues applied:
+For Drupal 10.1, with minimum PHP version: 8.1.3
+
+Requires patches for the following issues to be applied:
 
 Issue              | Description
 -------------------|----------------------------------------------------------------------------------------------|
 #3110546           | Allow contributed modules (mostly database drivers) to override tests in core |
-#3256642           | Autoload classes of database drivers modules' dependencies |
+#3256642           | Introduce database driver extensions and autoload database drivers' dependencies |
+#3265086           | Fix memory usage regression in StatementWrapper iterator |
 
-Minimum PHP version: 8.1.3
 
 Known issues
 ------------
@@ -20,4 +22,3 @@ Known issues
 - Apparently, `mysqli::rollback(0, 'savepoint-1')` does not respect the savepoint passed in, and rolls back the entire
   transaction. I had to revert to using `mysqli::query('ROLLBACK TO SAVEPOINT savepoint-1')` to get transaction tests
   pass. Could not find reported bugs for this.
-
