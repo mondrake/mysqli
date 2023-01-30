@@ -28,11 +28,11 @@ jobs:
         php-version:
           - "8.1"
         test-args:
-#          - "--group Database"
-          - "--group Installer"
-          - "--group field,Field"
-          - "--group File"
-          - "-v --group views"
+          - "--group Database"
+#          - "--group Installer"
+#          - "--group field,Field"
+#          - "--group File"
+#          - "-v --group views"
 #          - "core/modules/page_cache/tests/src/Functional/PageCacheTagsIntegrationTest.php"
 
     services:
