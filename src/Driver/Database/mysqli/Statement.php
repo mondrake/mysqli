@@ -143,9 +143,15 @@ class Statement extends StatementWrapper {
     }
 
     $mysqli_row = $this->mysqliResult->fetch_assoc();
-    if (!$mysqli_row) {
+
+    if ($mysqli_row) {
+      $this->setCurrentResultsetRow($mysqli_row);
+    }
+    else {
+      $this->markResultsetFetchingComplete();
       return FALSE;
     }
+
     $row = [];
     foreach ($mysqli_row as $column => $value) {
       $row[$column] = $value === NULL ? NULL : (string) $value;
