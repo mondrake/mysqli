@@ -111,7 +111,6 @@ class Statement extends StatementWrapper {
     }
 
     $return = $this->clientStatement->execute($args);
-    $this->markResultsetIterable($return);
     $result = $this->clientStatement->get_result();
     $this->mysqliResult = $result !== FALSE ? $result : NULL;
 
@@ -145,7 +144,6 @@ class Statement extends StatementWrapper {
     $mysqli_row = $this->mysqliResult->fetch_assoc();
 
     if (!$mysqli_row) {
-      $this->markResultsetFetchingComplete();
       return FALSE;
     }
 
