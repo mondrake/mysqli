@@ -190,7 +190,6 @@ class Statement extends StatementWrapper {
           throw new DatabaseExceptionWrapper("Unknown fetch type '{$mode}'");
     }
 
-    $this->setCurrentResultsetRow($ret);
     return $ret;
   }
 
