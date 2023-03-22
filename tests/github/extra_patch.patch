@@ -1,33 +1,44 @@
-diff --git a/core/modules/page_cache/tests/src/Functional/PageCacheTagsIntegrationTest.php b/core/modules/page_cache/tests/src/Functional/PageCacheTagsIntegrationTest.php
-index 7c127fe41b..3a8689cdcf 100644
---- a/core/modules/page_cache/tests/src/Functional/PageCacheTagsIntegrationTest.php
-+++ b/core/modules/page_cache/tests/src/Functional/PageCacheTagsIntegrationTest.php
-@@ -84,6 +84,7 @@ public function testPageCacheTags() {
-     ];
+diff --git a/core/lib/Drupal/Core/Database/StatementWrapper.php b/core/lib/Drupal/Core/Database/StatementWrapper.php
+index 32e0bf5825..fbdd13256f 100644
+--- a/core/lib/Drupal/Core/Database/StatementWrapper.php
++++ b/core/lib/Drupal/Core/Database/StatementWrapper.php
+@@ -366,6 +366,7 @@ protected function markResultsetFetchingComplete(): void {
+    * @internal This method should not be called directly.
+    */
+   public function current(): mixed {
++dump([__METHOD__, $this->resultsetRow]);
+     return $this->resultsetRow;
+   }
  
-     // Full node page 1.
-+global $xxx; $xxx=TRUE;
-     $this->assertPageCacheContextsAndTags($node_1->toUrl(), $cache_contexts, [
-       'http_response',
-       'rendered',
-diff --git a/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php b/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php
-index fefd3a462b..7a2fe26a6d 100644
---- a/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php
-+++ b/core/modules/system/tests/src/Functional/Cache/AssertPageCacheContextsAndTagsTrait.php
-@@ -3,6 +3,7 @@
- namespace Drupal\Tests\system\Functional\Cache;
+@@ -375,6 +376,7 @@ public function current(): mixed {
+    * @internal This method should not be called directly.
+    */
+   public function key(): mixed {
++dump([__METHOD__, $this->resultsetKey]);
+     return $this->resultsetKey;
+   }
  
- use Drupal\Core\Cache\Cache;
-+use Drupal\Core\Database\Database;
- use Drupal\Core\Url;
+@@ -384,6 +386,7 @@ public function key(): mixed {
+    * @internal This method should not be called directly.
+    */
+   public function rewind(): void {
++dump([__METHOD__]);
+     // Nothing to do: our DatabaseStatement can't be rewound.
+   }
  
- /**
-@@ -73,6 +74,8 @@ protected function assertPageCacheContextsAndTags(Url $url, array $expected_cont
-     sort($expected_tags);
+@@ -393,6 +396,7 @@ public function rewind(): void {
+    * @internal This method should not be called directly.
+    */
+   public function next(): void {
++dump([__METHOD__]);
+     $this->fetch();
+   }
  
-     // Assert cache miss + expected cache contexts + tags.
-+global $xxx; // if ($xxx) Database::closeConnection();
-+if ($xxx) Database::getConnection()->freakout();
-     $this->drupalGet($absolute_url);
-     $this->assertSession()->responseHeaderEquals('X-Drupal-Cache', 'MISS');
-     $this->assertCacheTags($expected_tags);
+@@ -402,6 +406,7 @@ public function next(): void {
+    * @internal This method should not be called directly.
+    */
+   public function valid(): bool {
++dump([__METHOD__, $this->isResultsetIterable, $this->resultsetKey]);
+     if ($this->isResultsetIterable && $this->resultsetKey === -1) {
+       $this->fetch();
+     }

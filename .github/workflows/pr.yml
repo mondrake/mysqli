@@ -29,12 +29,11 @@ jobs:
         php-version:
           - "8.1"
         test-args:
-#          - "--group Database"
+          - "--group Database"
 #          - "--group Installer"
 #          - "--group field,Field"
 #          - "--group File"
 #          - "-v --group views"
-          - "core/modules/file/tests/src/Functional/FileAddPermissionsUpdateTest.php"
 
     services:
       mysql:

@@ -2,40 +2,20 @@
 
 namespace Drupal\mysqli\Driver\Database\mysqli;
 
+use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\DatabaseExceptionWrapper;
+use Drupal\Core\Database\Event\StatementExecutionEndEvent;
+use Drupal\Core\Database\Event\StatementExecutionStartEvent;
 use Drupal\Core\Database\RowCountException;
-use Drupal\Core\Database\StatementWrapper;
+use Drupal\Core\Database\StatementWrapperIterator;
 
 /**
  * MySQLi implementation of \Drupal\Core\Database\Query\StatementInterface.
  */
-class Statement extends StatementWrapper {
-
-  /**
-   * The mysqli client connection.
-   *
-   * @var \mysqli
-   */
-  protected \mysqli $mysqliConnection;
-
-  /**
-   * The query string, in its form with placeholders.
-   *
-   * @var string
-   */
-  protected string $queryString;
-
-  /**
-   * Holds supplementary driver options.
-   *
-   * @var array
-   */
-  protected array $driverOpts;
+class Statement extends StatementWrapperIterator {
 
   /**
    * Holds the index position of named parameters.
-   *
-   * @var array
    */
   protected array $paramsPositions;
 
@@ -44,8 +24,6 @@ class Statement extends StatementWrapper {
    *
    * See http://php.net/manual/pdo.constants.php for the definition of the
    * constants used.
-   *
-   * @var int
    */
   protected int $defaultFetchMode;
 
@@ -53,8 +31,6 @@ class Statement extends StatementWrapper {
    * The class to be used for returning row results.
    *
    * Used when fetch mode is \PDO::FETCH_CLASS.
-   *
-   * @var string
    */
   protected string $fetchClass;
 
@@ -62,8 +38,6 @@ class Statement extends StatementWrapper {
    * The mysqli result object.
    *
    * Stores results of a data selection query.
-   *
-   * @var \mysqli_result|null
    */
   protected ?\mysqli_result $mysqliResult;
 
@@ -72,22 +46,23 @@ class Statement extends StatementWrapper {
    *
    * @param \Drupal\Core\Database\Connection $connection
    *   Drupal database connection object.
-   * @param \mysqli $client_connection
+   * @param \mysqli $mysqliConnection
    *   Client database connection object, for example \PDO.
-   * @param string $query
+   * @param string $queryString
    *   The SQL query string.
-   * @param array $options
+   * @param array $driverOpts
    *   (optional) Array of query options.
-   * @param bool $row_count_enabled
+   * @param bool $rowCountEnabled
    *   (optional) Enables counting the rows affected. Defaults to FALSE.
    */
-  public function __construct(Connection $connection, \mysqli $client_connection, string $query, array $driver_options = [], bool $row_count_enabled = FALSE) {
-    $this->connection = $connection;
-    $this->mysqliConnection = $client_connection;
-    $this->rowCountEnabled = $row_count_enabled;
-    $this->queryString = $query;
+  public function __construct(
+    protected readonly Connection $connection,
+    protected readonly \mysqli $mysqliConnection,
+    protected string $queryString,
+    protected array $driverOpts = [],
+    protected readonly bool $rowCountEnabled = FALSE,
+  ) {
     $this->setFetchMode(\PDO::FETCH_OBJ);
-    $this->driverOpts = $driver_options;
   }
 
   /**
@@ -95,7 +70,7 @@ class Statement extends StatementWrapper {
    */
   public function execute($args = [], $options = []) {
     // Prepare the lower-level statement if it's not been prepared already.
-    if (!$this->clientStatement) {
+    if (!isset($this->clientStatement)) {
       // Replace named placeholders with positional ones if needed.
       $this->paramsPositions = array_flip(array_keys($args));
       [$this->queryString, $args] = $this->connection->convertNamedPlaceholdersToPositional($this->queryString, $args);
@@ -119,18 +94,33 @@ class Statement extends StatementWrapper {
       }
     }
 
-    $logger = $this->connection->getLogger();
-    if (!empty($logger)) {
-      $query_start = microtime(TRUE);
+    if ($this->connection->isEventEnabled(StatementExecutionStartEvent::class)) {
+      $startEvent = new StatementExecutionStartEvent(
+        spl_object_id($this),
+        $this->connection->getKey(),
+        $this->connection->getTarget(),
+        $this->getQueryString(),
+        $args ?? [],
+        $this->connection->findCallerFromDebugBacktrace()
+      );
+      $this->connection->dispatchEvent($startEvent);
     }
 
     $return = $this->clientStatement->execute($args);
+    $this->markResultsetIterable($return);
     $result = $this->clientStatement->get_result();
     $this->mysqliResult = $result !== FALSE ? $result : NULL;
 
-    if (!empty($logger)) {
-      $query_end = microtime(TRUE);
-      $logger->log($this, $args, $query_end - $query_start, $query_start);
+    if (isset($startEvent) && $this->connection->isEventEnabled(StatementExecutionEndEvent::class)) {
+      $this->connection->dispatchEvent(new StatementExecutionEndEvent(
+        $startEvent->statementObjectId,
+        $startEvent->key,
+        $startEvent->target,
+        $startEvent->queryString,
+        $startEvent->args,
+        $startEvent->caller,
+        $startEvent->time
+      ));
     }
 
     return $return;
@@ -156,25 +146,32 @@ class Statement extends StatementWrapper {
     }
 
     $mysqli_row = $this->mysqliResult->fetch_assoc();
+
     if (!$mysqli_row) {
+      $this->markResultsetFetchingComplete();
       return FALSE;
     }
+
     $row = [];
     foreach ($mysqli_row as $column => $value) {
       $row[$column] = $value === NULL ? NULL : (string) $value;
     }
     switch ($mode) {
       case \PDO::FETCH_ASSOC:
-        return $row;
+        $ret = $row;
+        break;
 
       case \PDO::FETCH_NUM:
-        return array_values($row);
+        $ret = array_values($row);
+        break;
 
       case \PDO::FETCH_BOTH:
-        return $row + array_values($row);
+        $ret = $row + array_values($row);
+        break;
 
       case \PDO::FETCH_OBJ:
-        return (object) $row;
+        $ret = (object) $row;
+        break;
 
       case \PDO::FETCH_CLASS:
         $constructor_arguments = $this->fetchOptions['constructor_args'] ?? [];
@@ -182,7 +179,8 @@ class Statement extends StatementWrapper {
         foreach ($row as $column => $value) {
           $class_obj->$column = $value;
         }
-        return $class_obj;
+        $ret = $class_obj;
+        break;
 
       case \PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE:
         $class = array_shift($row);
@@ -190,11 +188,15 @@ class Statement extends StatementWrapper {
         foreach ($row as $column => $value) {
           $class_obj->$column = $value;
         }
-        return $class_obj;
+        $ret = $class_obj;
+        break;
 
       default:
           throw new DatabaseExceptionWrapper("Unknown fetch type '{$mode}'");
     }
+
+    $this->setResultsetCurrentRow($ret);
+    return $ret;
   }
 
   /**
@@ -306,7 +308,6 @@ class Statement extends StatementWrapper {
       if ($this->mysqliConnection->info !== NULL) {
         $matches = [];
         if (preg_match('/\s(\d+)\s/', $this->mysqliConnection->info, $matches) === 1) {
-//dump(['******', $this->queryString, $this->mysqliConnection->info, $matches, $this->mysqliConnection->affected_rows]);
           return (int) $matches[0];
         }
         else {
@@ -335,3 +336,4 @@ class Statement extends StatementWrapper {
   }
 
 }
+//dump(['******', $this->queryString, $this->mysqliConnection->info, $matches, $this->mysqliConnection->affected_rows]);
