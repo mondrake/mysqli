@@ -3,28 +3,15 @@
 namespace Drupal\mysqli\Driver\Database\mysqli;
 
 use Drupal\Core\Database\DatabaseExceptionWrapper;
+use Drupal\Core\Database\Event\StatementExecutionEndEvent;
+use Drupal\Core\Database\Event\StatementExecutionStartEvent;
 use Drupal\Core\Database\RowCountException;
-use Drupal\Core\Database\StatementWrapper;
+use Drupal\Core\Database\StatementWrapperIterator;
 
 /**
  * MySQLi implementation of \Drupal\Core\Database\Query\StatementInterface.
  */
-class Statement extends StatementWrapper {
-
-  /**
-   * The mysqli client connection.
-   */
-  protected \mysqli $mysqliConnection;
-
-  /**
-   * The query string, in its form with placeholders.
-   */
-  protected string $queryString;
-
-  /**
-   * Holds supplementary driver options.
-   */
-  protected array $driverOpts;
+class Statement extends StatementWrapperIterator {
 
   /**
    * Holds the index position of named parameters.
@@ -58,22 +45,23 @@ class Statement extends StatementWrapper {
    *
    * @param \Drupal\Core\Database\Connection $connection
    *   Drupal database connection object.
-   * @param \mysqli $client_connection
+   * @param \mysqli $mysqliConnection
    *   Client database connection object, for example \PDO.
-   * @param string $query
+   * @param string $queryString
    *   The SQL query string.
-   * @param array $options
+   * @param array $driverOpts
    *   (optional) Array of query options.
-   * @param bool $row_count_enabled
+   * @param bool $rowCountEnabled
    *   (optional) Enables counting the rows affected. Defaults to FALSE.
    */
-  public function __construct(Connection $connection, \mysqli $client_connection, string $query, array $driver_options = [], bool $row_count_enabled = FALSE) {
-    $this->connection = $connection;
-    $this->mysqliConnection = $client_connection;
-    $this->rowCountEnabled = $row_count_enabled;
-    $this->queryString = $query;
+  public function __construct(
+    protected readonly Connection $connection,
+    protected readonly \mysqli $mysqliConnection,
+    protected string $queryString,
+    protected array $driverOpts = [],
+    protected readonly bool $rowCountEnabled = FALSE,
+  ) {
     $this->setFetchMode(\PDO::FETCH_OBJ);
-    $this->driverOpts = $driver_options;
   }
 
   /**
@@ -105,18 +93,33 @@ class Statement extends StatementWrapper {
       }
     }
 
-    $logger = $this->connection->getLogger();
-    if (!empty($logger)) {
-      $query_start = microtime(TRUE);
+    if ($this->connection->isEventEnabled(StatementExecutionStartEvent::class)) {
+      $startEvent = new StatementExecutionStartEvent(
+        spl_object_id($this),
+        $this->connection->getKey(),
+        $this->connection->getTarget(),
+        $this->getQueryString(),
+        $args ?? [],
+        $this->connection->findCallerFromDebugBacktrace()
+      );
+      $this->connection->dispatchEvent($startEvent);
     }
 
     $return = $this->clientStatement->execute($args);
+    $this->markResultsetIterable($return);
     $result = $this->clientStatement->get_result();
     $this->mysqliResult = $result !== FALSE ? $result : NULL;
 
-    if (!empty($logger)) {
-      $query_end = microtime(TRUE);
-      $logger->log($this, $args, $query_end - $query_start, $query_start);
+    if (isset($startEvent) && $this->connection->isEventEnabled(StatementExecutionEndEvent::class)) {
+      $this->connection->dispatchEvent(new StatementExecutionEndEvent(
+        $startEvent->statementObjectId,
+        $startEvent->key,
+        $startEvent->target,
+        $startEvent->queryString,
+        $startEvent->args,
+        $startEvent->caller,
+        $startEvent->time
+      ));
     }
 
     return $return;
@@ -144,6 +147,7 @@ class Statement extends StatementWrapper {
     $mysqli_row = $this->mysqliResult->fetch_assoc();
 
     if (!$mysqli_row) {
+      $this->markResultsetFetchingComplete();
       return FALSE;
     }
 
@@ -190,6 +194,7 @@ class Statement extends StatementWrapper {
           throw new DatabaseExceptionWrapper("Unknown fetch type '{$mode}'");
     }
 
+    $this->setResultsetCurrentRow($ret);
     return $ret;
   }
 

@@ -12,7 +12,6 @@ Issue              | Description
 -------------------|----------------------------------------------------------------------------------------------|
 #3110546           | Allow contributed modules (mostly database drivers) to override tests in core |
 #3256642           | Introduce database driver extensions and autoload database drivers' dependencies |
-#3265086           | Fix memory usage regression in StatementWrapper iterator |
 
 
 Known issues
