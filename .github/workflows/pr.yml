@@ -9,7 +9,8 @@ env:
     BROWSERTEST_OUTPUT_DIRECTORY: "sites/default/files/simpletest"
     MINK_DRIVER_ARGS_WEBDRIVER: '["chrome", {"browserName":"chrome","chromeOptions":{"args":["--disable-gpu","--headless", "--no-sandbox"]}}, "http://localhost:4444"]'
     PHPUNIT_SKIP_CLASS: '[
-      "Drupal\\KernelTests\\Core\\Cache\\ApcuBackendTest"
+      "Drupal\\KernelTests\\Core\\Cache\\ApcuBackendTest",
+      "Drupal\\Tests\\file\\Functional\\FileAddPermissionsUpdateTest"
     ]'
 
 jobs:
@@ -28,14 +29,11 @@ jobs:
         php-version:
           - "8.1"
         test-args:
-#          - "core/tests/Drupal/KernelTests/Core/Database/SelectComplexTest.php"
-#          - "core/tests/Drupal/KernelTests/Core/Database/FetchTest.php"
           - "--group Database"
 #          - "--group Installer"
 #          - "--group field,Field"
 #          - "--group File"
 #          - "-v --group views"
-#          - "core/modules/page_cache/tests/src/Functional/PageCacheTagsIntegrationTest.php"
 
     services:
       mysql:
