@@ -70,7 +70,7 @@ class Statement extends StatementWrapperIterator {
    */
   public function execute($args = [], $options = []) {
     // Prepare the lower-level statement if it's not been prepared already.
-    if (!$this->clientStatement) {
+    if (!isset($this->clientStatement)) {
       // Replace named placeholders with positional ones if needed.
       $this->paramsPositions = array_flip(array_keys($args));
       [$this->queryString, $args] = $this->connection->convertNamedPlaceholdersToPositional($this->queryString, $args);
