@@ -6,6 +6,7 @@ use Drupal\Core\Database\Connection;
 use Drupal\Core\Database\DatabaseExceptionWrapper;
 use Drupal\Core\Database\Event\StatementExecutionEndEvent;
 use Drupal\Core\Database\Event\StatementExecutionStartEvent;
+use Drupal\Core\Database\FetchModeTrait;
 use Drupal\Core\Database\RowCountException;
 use Drupal\Core\Database\StatementWrapperIterator;
 
@@ -13,6 +14,8 @@ use Drupal\Core\Database\StatementWrapperIterator;
  * MySQLi implementation of \Drupal\Core\Database\Query\StatementInterface.
  */
 class Statement extends StatementWrapperIterator {
+
+  use FetchModeTrait;
 
   /**
    * Holds the index position of named parameters.
@@ -152,48 +155,23 @@ class Statement extends StatementWrapperIterator {
       return FALSE;
     }
 
+    // Stringify all non-NULL column values.
     $row = [];
     foreach ($mysqli_row as $column => $value) {
       $row[$column] = $value === NULL ? NULL : (string) $value;
     }
-    switch ($mode) {
-      case \PDO::FETCH_ASSOC:
-        $ret = $row;
-        break;
 
-      case \PDO::FETCH_NUM:
-        $ret = array_values($row);
-        break;
-
-      case \PDO::FETCH_BOTH:
-        $ret = $row + array_values($row);
-        break;
-
-      case \PDO::FETCH_OBJ:
-        $ret = (object) $row;
-        break;
-
-      case \PDO::FETCH_CLASS:
-        $constructor_arguments = $this->fetchOptions['constructor_args'] ?? [];
-        $class_obj = new $this->fetchClass(...$constructor_arguments);
-        foreach ($row as $column => $value) {
-          $class_obj->$column = $value;
-        }
-        $ret = $class_obj;
-        break;
-
-      case \PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE:
-        $class = array_shift($row);
-        $class_obj = new $class();
-        foreach ($row as $column => $value) {
-          $class_obj->$column = $value;
-        }
-        $ret = $class_obj;
-        break;
-
-      default:
-          throw new DatabaseExceptionWrapper("Unknown fetch type '{$mode}'");
-    }
+    $ret = match($mode) {
+      \PDO::FETCH_ASSOC => $row,
+      \PDO::FETCH_BOTH => $this->assocToBoth($row),
+      \PDO::FETCH_NUM => $this->assocToNum($row),
+      \PDO::FETCH_LAZY, \PDO::FETCH_OBJ => $this->assocToObj($row),
+      \PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE => $this->assocToClassType($row, $this->fetchOptions['constructor_args']),
+      \PDO::FETCH_CLASS => $this->assocToClass($row, $this->fetchClass, $this->fetchOptions['constructor_args']),
+      \PDO::FETCH_INTO => $this->assocIntoObject($row, $this->fetchOptions['object']),
+      \PDO::FETCH_COLUMN => $this->assocToColumn($row, $this->columnNames, $this->fetchOptions['column']),
+      default => throw new DatabaseExceptionWrapper("Unknown fetch type '{$mode}'"),
+    };
 
     $this->setResultsetCurrentRow($ret);
     return $ret;
@@ -336,4 +314,3 @@ class Statement extends StatementWrapperIterator {
   }
 
 }
-//dump(['******', $this->queryString, $this->mysqliConnection->info, $matches, $this->mysqliConnection->affected_rows]);
