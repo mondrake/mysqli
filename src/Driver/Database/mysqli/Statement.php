@@ -28,14 +28,19 @@ class Statement extends StatementWrapperIterator {
    * See http://php.net/manual/pdo.constants.php for the definition of the
    * constants used.
    */
-  protected int $defaultFetchMode;
+  protected int $defaultFetchStyle;
 
   /**
-   * The class to be used for returning row results.
+   * Holds fetch options.
    *
-   * Used when fetch mode is \PDO::FETCH_CLASS.
+   * @var string[]
    */
-  protected string $fetchClass;
+  protected array $fetchOptions = [
+    'class' => 'stdClass',
+    'constructor_args' => [],
+    'object' => NULL,
+    'column' => 0,
+  ];
 
   /**
    * The mysqli result object.
@@ -145,7 +150,7 @@ class Statement extends StatementWrapperIterator {
       $mode = \PDO::FETCH_CLASS;
     }
     else {
-      $mode = $mode ?: $this->defaultFetchMode;
+      $mode = $mode ?: $this->defaultFetchStyle;
     }
 
     $mysqli_row = $this->mysqliResult->fetch_assoc();
@@ -154,6 +159,8 @@ class Statement extends StatementWrapperIterator {
       $this->markResultsetFetchingComplete();
       return FALSE;
     }
+
+    $columnNames = array_keys($mysqli_row);
 
     // Stringify all non-NULL column values.
     $row = [];
@@ -167,9 +174,9 @@ class Statement extends StatementWrapperIterator {
       \PDO::FETCH_NUM => $this->assocToNum($row),
       \PDO::FETCH_LAZY, \PDO::FETCH_OBJ => $this->assocToObj($row),
       \PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE => $this->assocToClassType($row, $this->fetchOptions['constructor_args']),
-      \PDO::FETCH_CLASS => $this->assocToClass($row, $this->fetchClass, $this->fetchOptions['constructor_args']),
+      \PDO::FETCH_CLASS => $this->assocToClass($row, $this->fetchOptions['class'], $this->fetchOptions['constructor_args']),
       \PDO::FETCH_INTO => $this->assocIntoObject($row, $this->fetchOptions['object']),
-      \PDO::FETCH_COLUMN => $this->assocToColumn($row, $this->columnNames, $this->fetchOptions['column']),
+      \PDO::FETCH_COLUMN => $this->assocToColumn($row, $columnNames, $this->fetchOptions['column']),
       default => throw new DatabaseExceptionWrapper("Unknown fetch type '{$mode}'"),
     };
 
@@ -186,7 +193,7 @@ class Statement extends StatementWrapperIterator {
       $mode = \PDO::FETCH_CLASS;
     }
     else {
-      $mode = $mode ?: $this->defaultFetchMode;
+      $mode = $mode ?: $this->defaultFetchStyle;
     }
 
     $rows = [];
@@ -218,7 +225,7 @@ class Statement extends StatementWrapperIterator {
         $this->setFetchMode(\PDO::FETCH_CLASS, $fetch);
       }
       else {
-        $this->setFetchMode($fetch ?: $this->defaultFetchMode);
+        $this->setFetchMode($fetch ?: $this->defaultFetchStyle);
       }
     }
 
@@ -306,9 +313,22 @@ class Statement extends StatementWrapperIterator {
    * {@inheritdoc}
    */
   public function setFetchMode($mode, $a1 = NULL, $a2 = []) {
-    $this->defaultFetchMode = $mode;
-    if ($mode === \PDO::FETCH_CLASS) {
-      $this->fetchClass = $a1;
+    $this->defaultFetchStyle = $mode;
+    switch ($mode) {
+      case \PDO::FETCH_CLASS:
+        $this->fetchOptions['class'] = $a1;
+        if ($a2) {
+          $this->fetchOptions['constructor_args'] = $a2;
+        }
+        break;
+
+      case \PDO::FETCH_COLUMN:
+        $this->fetchOptions['column'] = $a1;
+        break;
+
+      case \PDO::FETCH_INTO:
+        $this->fetchOptions['object'] = $a1;
+        break;
     }
     return TRUE;
   }
