@@ -66,7 +66,7 @@ jobs:
           ini-values: "zend.assertions=1"
 
       - name: Checkout Drupal
-        run: git clone --depth=5 --branch=10.1.x http://git.drupal.org/project/drupal.git .
+        run: git clone --depth=5 --branch=11.x http://git.drupal.org/project/drupal.git .
 
       - name: Checkout mysqli module
         uses: actions/checkout@v3

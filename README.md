@@ -4,7 +4,7 @@
 
 A Drupal database driver module for MySQLi.
 
-For Drupal 10.1, with minimum PHP version: 8.1.3
+For Drupal 11.x, with minimum PHP version: 8.1.3
 
 Requires patches for the following issues to be applied:
 

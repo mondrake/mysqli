@@ -4,8 +4,8 @@
     "description": "Database driver for MySQLi.",
     "license": "LGPL-3.0-or-later",
     "require": {
-        "drupal/core": "^10.1",
-        "drush/drush": "^11.0.6"
+        "drupal/core": "^11",
+        "drush/drush": "^12"
     },
     "autoload": {
       "classmap": ["drush/SqlMysqli.php"]
