@@ -349,4 +349,11 @@ class Connection extends BaseMySqlConnection {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function exceptionHandler() {
+    return new ExceptionHandler();
+  }
+
 }
