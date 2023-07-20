@@ -11,7 +11,6 @@ Requires patches for the following issues to be applied:
 Issue              | Description
 -------------------|----------------------------------------------------------------------------------------------|
 #3110546           | Allow contributed modules (mostly database drivers) to override tests in core |
-#3217531           | Deprecate usage of Connection::getDriverClass for some classes, and use standard autoloading instead |
 
 
 Known issues
