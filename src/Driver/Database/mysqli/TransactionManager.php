@@ -47,14 +47,24 @@ class TransactionManager extends TransactionManagerBase {
    * {@inheritdoc}
    */
   protected function rollbackClientTransaction(): bool {
-    return $this->connection->getClientConnection()->rollback();
+    $clientRollback = $this->connection->getClientConnection()->rollBack();
+    $this->setConnectionTransactionState($clientRollback ?
+      ClientConnectionTransactionState::RolledBack :
+      ClientConnectionTransactionState::RollbackFailed
+    );
+    return $clientRollback;
   }
 
   /**
    * {@inheritdoc}
    */
   protected function commitClientTransaction(): bool {
-    return $this->connection->getClientConnection()->commit();
+    $clientCommit = $this->connection->getClientConnection()->commit();
+    $this->setConnectionTransactionState($clientCommit ?
+      ClientConnectionTransactionState::Committed :
+      ClientConnectionTransactionState::CommitFailed
+    );
+    return $clientCommit;
   }
 
 }
