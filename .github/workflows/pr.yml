@@ -104,7 +104,7 @@ jobs:
         continue-on-error: true
         run: vendor/bin/phpunit -c core --color=always ${{ matrix.test-args }}
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: test-results
-          path: sites/simpletest/browser_output
+#      - uses: actions/upload-artifact@v3
+#        with:
+#          name: test-results
+#          path: sites/simpletest/browser_output
