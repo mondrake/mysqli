@@ -29,6 +29,13 @@ class TransactionManager extends TransactionManagerBase {
   /**
    * {@inheritdoc}
    */
+  protected function releaseClientSavepoint(string $name): bool {
+    return $this->connection->getClientConnection()->release_savepoint($name);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function processRootCommit(): void {
     if (!$this->connection->inTransaction()) {
       $this->setConnectionTransactionState(ClientConnectionTransactionState::Voided);
