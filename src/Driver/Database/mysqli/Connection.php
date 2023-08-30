@@ -4,12 +4,14 @@ namespace Drupal\mysqli\Driver\Database\mysqli;
 
 use Drupal\Core\Database\Connection as BaseConnection;
 use Drupal\Core\Database\Database;
+use Drupal\Core\Database\Transaction\TransactionManagerInterface;
 use Drupal\Core\Database\TransactionNameNonUniqueException;
 use Drupal\Core\Database\TransactionNoActiveException;
 use Drupal\Core\Database\TransactionOutOfOrderException;
 use Drupal\mysql\Driver\Database\mysql\Connection as BaseMySqlConnection;
 use Drupal\mysqli\Driver\Database\mysqli\Parser\Parser;
 use Drupal\mysqli\Driver\Database\mysqli\Parser\Visitor;
+
 /**
  * MySQLi implementation of \Drupal\Core\Database\Connection.
  */
@@ -182,151 +184,6 @@ class Connection extends BaseMySqlConnection {
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function pushTransaction($name) {
-// global $xxx; if ($xxx) dump(['pushTransaction in', $name]);
-    if (isset($this->transactionLayers[$name])) {
-      throw new TransactionNameNonUniqueException($name . " is already in use.");
-    }
-    // If we're already in a transaction then we want to create a savepoint
-    // rather than try to create another transaction.
-    if ($this->inTransaction()) {
-// if ($xxx) dump(['pushTransaction savepoint', $name]);
-      $this->connection->savepoint($name);
-    }
-    else {
-// if ($xxx) dump(['pushTransaction begin_transaction', $name]);
-      $this->connection->begin_transaction(0, $name);
-    }
-    $this->transactionLayers[$name] = $name;
-// if ($xxx) dump(['pushTransaction out', $this->transactionLayers]);
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * mysqli does not support query('RELEASE SAVEPOINT ' . $name), we
-   * need to use direct rollback on the connection.
-   */
-  protected function popCommittableTransactions() {
-// global $xxx; if ($xxx) dump(['popCommittableTransactions in', $this->transactionLayers]);
-    // Commit all the committable layers.
-    foreach (array_reverse($this->transactionLayers) as $name => $active) {
-      // Stop once we found an active transaction.
-      if ($active) {
-        break;
-      }
-
-      // If there are no more layers left then we should commit.
-      unset($this->transactionLayers[$name]);
-      if (empty($this->transactionLayers)) {
-//dump(['popCommittableTransactions 1', $name]);
-        $this->doCommit();
-      }
-      else {
-//dump(['popCommittableTransactions 2', $name]);
-        if (!$this->connection->release_savepoint($name)) {
-//dump(['popCommittableTransactions 3', $name]);
-          $this->transactionLayers = [];
-          $this->doCommit();
-        }
-      }
-    }
-// if ($xxx) dump(['popCommittableTransactions out', $this->transactionLayers]);
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * mysqli does not support query('ROLLBACK TO SAVEPOINT ' . $savepoint), we
-   * need to use direct rollback on the connection.
-   */
-  public function rollBack($savepoint_name = 'drupal_transaction') {
-// global $xxx; if ($xxx) dump(['rollBack in', $savepoint_name, $this->transactionLayers]);
-    if (!$this->inTransaction()) {
-      throw new TransactionNoActiveException();
-    }
-    // A previous rollback to an earlier savepoint may mean that the savepoint
-    // in question has already been accidentally committed.
-    if (!isset($this->transactionLayers[$savepoint_name])) {
-      throw new TransactionNoActiveException();
-    }
-
-    // We need to find the point we're rolling back to, all other savepoints
-    // before are no longer needed. If we rolled back other active savepoints,
-    // we need to throw an exception.
-    $rolled_back_other_active_savepoints = FALSE;
-    while ($savepoint = array_pop($this->transactionLayers)) {
-      if ($savepoint == $savepoint_name) {
-        // If it is the last the transaction in the stack, then it is not a
-        // savepoint, it is the transaction itself so we will need to roll back
-        // the transaction rather than a savepoint.
-        if (empty($this->transactionLayers)) {
-//dump(['rollBack 2', $savepoint_name, $this->transactionLayers]);
-          break;
-        }
-//dump($this->query('SELECT * FROM {test}')->fetchAll());
-//        $success = $this->connection->rollback(0, $savepoint);
-        $success = $this->connection->query('ROLLBACK TO SAVEPOINT ' . $savepoint_name);
-//dump(['rollBack 3', $savepoint_name, $this->transactionLayers, $success]);
-//dump($this->query('SELECT * FROM {test}')->fetchAll());
-        $this->popCommittableTransactions();
-        if ($rolled_back_other_active_savepoints) {
-          throw new TransactionOutOfOrderException();
-        }
-        return;
-      }
-      else {
-//dump(['rollBack 4', $savepoint, $savepoint_name, $this->transactionLayers]);
-        $rolled_back_other_active_savepoints = TRUE;
-      }
-// if ($xxx) dump(['rollBack out', $savepoint_name, $this->transactionLayers]);
-    }
-
-    // Notify the callbacks about the rollback.
-    $callbacks = $this->rootTransactionEndCallbacks;
-    $this->rootTransactionEndCallbacks = [];
-    foreach ($callbacks as $callback) {
-      call_user_func($callback, FALSE);
-    }
-
-//dump(['in rollback 1']);
-    if (!$this->connection->rollBack()) {
-//dump(['in rollback 2']);
-      trigger_error('Invalid rollback', E_USER_WARNING);
-    }
-    if ($rolled_back_other_active_savepoints) {
-      throw new TransactionOutOfOrderException();
-    }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function doCommit() {
-    try {
-      $this->connection->commit();
-      $success = TRUE;
-    }
-    catch (\mysqli_sql_exception $e) {
-      $success = FALSE;
-    }
-
-    if (!empty($this->rootTransactionEndCallbacks)) {
-      $callbacks = $this->rootTransactionEndCallbacks;
-      $this->rootTransactionEndCallbacks = [];
-      foreach ($callbacks as $callback) {
-        call_user_func($callback, $success);
-      }
-    }
-
-    if (!$success) {
-      throw new TransactionCommitFailedException();
-    }
-  }
-
-  /**
    * @todo
    */
   public function convertNamedPlaceholdersToPositional(string $sql, array $args): array {
@@ -354,6 +211,13 @@ class Connection extends BaseMySqlConnection {
    */
   public function exceptionHandler() {
     return new ExceptionHandler();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function driverTransactionManager(): TransactionManagerInterface {
+    return new TransactionManager($this);
   }
 
 }
