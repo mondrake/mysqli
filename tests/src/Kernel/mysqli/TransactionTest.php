@@ -104,4 +104,13 @@ class TransactionTest extends DriverSpecificTransactionTestBase {
     }
   }
 
+  /**
+   * Tests deprecation of Connection methods.
+   *
+   * @group legacy
+   */
+  public function testConnectionDeprecations(): void {
+    $this->markTestSkipped('Skipping this for mysqli');
+  }
+
 }

@@ -29,6 +29,14 @@ class TransactionManager extends TransactionManagerBase {
   /**
    * {@inheritdoc}
    */
+  protected function rollbackClientSavepoint(string $name): bool {
+    $this->connection->query('ROLLBACK TO ' . $name);
+    return TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   protected function releaseClientSavepoint(string $name): bool {
     return $this->connection->getClientConnection()->release_savepoint($name);
   }
