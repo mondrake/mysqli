@@ -113,4 +113,15 @@ class TransactionTest extends DriverSpecificTransactionTestBase {
     $this->markTestSkipped('Skipping this for mysqli');
   }
 
+
+  /**
+   * A post-transaction callback for testing purposes.
+   */
+  public function rootTransactionCallback(bool $success): void {
+dump([__METHOD__, $success]);
+    $this->postTransactionCallbackAction = $success ? 'rtcCommit' : 'rtcRollback';
+    $this->insertRow($this->postTransactionCallbackAction);
+  }
+
+
 }

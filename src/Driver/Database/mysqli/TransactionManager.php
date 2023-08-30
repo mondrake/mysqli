@@ -54,7 +54,9 @@ class TransactionManager extends TransactionManagerBase {
    * {@inheritdoc}
    */
   protected function commitClientTransaction(): bool {
-    return $this->connection->getClientConnection()->commit();
+    $success = $this->connection->getClientConnection()->commit();
+dump([__METHOD__, $success]);
+    return $success;
   }
 
 }
