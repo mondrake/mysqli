@@ -9,11 +9,6 @@ use Drupal\Core\Database\Transaction\TransactionManagerBase;
 
 /**
  * MySqli implementation of TransactionManagerInterface.
- *
- * MySQL will automatically commit transactions when tables are altered or
- * created (DDL transactions are not supported). However, pdo_mysql tracks
- * whether a client connection is still active and we can prevent triggering
- * exceptions.
  */
 class TransactionManager extends TransactionManagerBase {
 
@@ -22,6 +17,13 @@ class TransactionManager extends TransactionManagerBase {
    */
   protected function beginClientTransaction(): bool {
     return $this->connection->getClientConnection()->begin_transaction();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function addClientSavepoint(string $name): bool {
+    return $this->connection->getClientConnection()->savepoint($name);
   }
 
   /**

@@ -220,4 +220,11 @@ class Connection extends BaseMySqlConnection {
     return new TransactionManager($this);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function startTransaction($name = '') {
+    return $this->transactionManager()->push($name);
+  }
+
 }
