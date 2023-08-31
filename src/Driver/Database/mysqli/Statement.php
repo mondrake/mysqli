@@ -15,8 +15,6 @@ use Drupal\Core\Database\StatementWrapperIterator;
  */
 class Statement extends StatementWrapperIterator {
 
-  use FetchModeTrait;
-
   /**
    * Holds the index position of named parameters.
    */
@@ -145,6 +143,9 @@ class Statement extends StatementWrapperIterator {
    * {@inheritdoc}
    */
   public function fetch($mode = NULL, $cursor_orientation = NULL, $cursor_offset = NULL) {
+    if (isset($mode) && !in_array($mode, $this->supportedFetchModes)) {
+      @trigger_error('Fetch mode ' . ($this->fetchModeLiterals[$mode] ?? $mode) . ' is deprecated in drupal:10.2.0 and is removed from drupal:11.0.0. Use supported modes only. See https://www.drupal.org/node/3377999', E_USER_DEPRECATED);
+    }
     if (is_string($mode)) {
       $this->setFetchMode(\PDO::FETCH_CLASS, $mode);
       $mode = \PDO::FETCH_CLASS;
@@ -191,6 +192,9 @@ class Statement extends StatementWrapperIterator {
    * {@inheritdoc}
    */
   public function fetchAll($mode = NULL, $column_index = NULL, $constructor_arguments = NULL) {
+    if (isset($mode) && !in_array($mode, $this->supportedFetchModes)) {
+      @trigger_error('Fetch mode ' . ($this->fetchModeLiterals[$mode] ?? $mode) . ' is deprecated in drupal:10.2.0 and is removed from drupal:11.0.0. Use supported modes only. See https://www.drupal.org/node/3377999', E_USER_DEPRECATED);
+    }
     if (is_string($mode)) {
       $this->setFetchMode(\PDO::FETCH_CLASS, $mode);
       $mode = \PDO::FETCH_CLASS;
@@ -316,6 +320,9 @@ class Statement extends StatementWrapperIterator {
    * {@inheritdoc}
    */
   public function setFetchMode($mode, $a1 = NULL, $a2 = []) {
+    if (!in_array($mode, $this->supportedFetchModes)) {
+      @trigger_error('Fetch mode ' . ($this->fetchModeLiterals[$mode] ?? $mode) . ' is deprecated in drupal:10.2.0 and is removed from drupal:11.0.0. Use supported modes only. See https://www.drupal.org/node/3377999', E_USER_DEPRECATED);
+    }
     $this->defaultFetchStyle = $mode;
     switch ($mode) {
       case \PDO::FETCH_CLASS:
