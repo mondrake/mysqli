@@ -9,20 +9,11 @@ use Drupal\Core\Database\TransactionNameNonUniqueException;
 use Drupal\Core\Database\TransactionNoActiveException;
 use Drupal\Core\Database\TransactionOutOfOrderException;
 use Drupal\mysql\Driver\Database\mysql\Connection as BaseMySqlConnection;
-use Drupal\mysqli\Driver\Database\mysqli\Parser\Parser;
-use Drupal\mysqli\Driver\Database\mysqli\Parser\Visitor;
 
 /**
  * MySQLi implementation of \Drupal\Core\Database\Connection.
  */
 class Connection extends BaseMySqlConnection {
-
-  /**
-   * The SQL parser.
-   *
-   * @todo
-   */
-  protected Parser $parser;
 
   /**
    * {@inheritdoc}
@@ -181,29 +172,6 @@ class Connection extends BaseMySqlConnection {
    */
   public function lastInsertId(?string $name = NULL): string {
     return $this->connection->insert_id;
-  }
-
-  /**
-   * @todo
-   */
-  public function convertNamedPlaceholdersToPositional(string $sql, array $args): array {
-    if (!isset($this->parser)) {
-      $this->parser = new Parser(FALSE);
-    }
-
-    $pms = [];
-    foreach($args as $k => $v) {
-      $pms[substr($k, 1)] = $v;
-    }
-
-    $visitor = new Visitor($pms);
-
-    $this->parser->parse($sql, $visitor);
-
-    return [
-      $visitor->getSQL(),
-      $visitor->getParameters(),
-    ];
   }
 
   /**
