@@ -188,7 +188,7 @@ class Connection extends BaseMySqlConnection {
    */
   public function convertNamedPlaceholdersToPositional(string $sql, array $args): array {
     if (!isset($this->parser)) {
-      $this->parser = new Parser(FALSE);
+      $this->parser = new Parser();
     }
 
     $pms = [];
@@ -200,10 +200,11 @@ class Connection extends BaseMySqlConnection {
 
     $this->parser->parse($sql, $visitor);
 
-    return [
-      $visitor->getSQL(),
-      $visitor->getParameters(),
-    ];
+    $newSql = $visitor->getSQL();
+    $newParameters = $visitor->getParameters();
+dump([$sql, $args, $pms, $newSql, $newParameters]);
+
+    return [$newSql, $newParameters];
   }
 
   /**

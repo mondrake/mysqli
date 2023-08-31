@@ -26,22 +26,14 @@ final class Parser
   private const SPECIAL              = '[' . self::SPECIAL_CHARS . ']';
   private const OTHER                = '[^' . self::SPECIAL_CHARS . ']+';
 
-  /** @var string */
-  private $sqlPattern;
+  private string $sqlPattern;
 
-  public function __construct(bool $mySQLStringEscaping)
+  public function __construct()
   {
-    if ($mySQLStringEscaping) {
-      $patterns = [
-        $this->getMySQLStringLiteralPattern("'"),
-        $this->getMySQLStringLiteralPattern('"'),
-      ];
-    } else {
-      $patterns = [
-        $this->getAnsiSQLStringLiteralPattern("'"),
-        $this->getAnsiSQLStringLiteralPattern('"'),
-      ];
-    }
+    $patterns = [
+      $this->getAnsiSQLStringLiteralPattern("'"),
+      $this->getAnsiSQLStringLiteralPattern('"'),
+    ];
 
     $patterns = array_merge($patterns, [
       self::BACKTICK_IDENTIFIER,
@@ -95,13 +87,6 @@ final class Parser
     }
 
     assert($offset === strlen($sql));
-  }
-
-  /**
-   * @todo
-   */
-  private function getMySQLStringLiteralPattern(string $delimiter): string {
-    return $delimiter . '((\\\\.)|(?![' . $delimiter . '\\\\]).)*' . $delimiter;
   }
 
   /**
