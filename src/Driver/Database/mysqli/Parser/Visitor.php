@@ -5,7 +5,7 @@ namespace Drupal\mysqli\Driver\Database\mysqli\Parser;
 final class Visitor
 {
   /** @var array<int,mixed>|array<string,mixed> */
-  private $originalParameters;
+  private $originalParameters = [];
 
   /** @var int */
   private $originalParameterIndex = 0;
@@ -20,11 +20,10 @@ final class Visitor
    * @todo
    */
   public function __construct(array $parameters) {
-    $pms = [];
-    foreach($parameters as $k => $v) {
-      $pms[substr($k, 1)] = $v;
+    // Remove the initial colon from the placeholders.
+    foreach($parameters as $key => $value) {
+      $this->originalParameters[substr($key, 1)] = $value;
     }
-    $this->originalParameters = $pms;
   }
 
   /**

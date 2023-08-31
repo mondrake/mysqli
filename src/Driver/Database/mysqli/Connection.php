@@ -9,17 +9,11 @@ use Drupal\Core\Database\TransactionNameNonUniqueException;
 use Drupal\Core\Database\TransactionNoActiveException;
 use Drupal\Core\Database\TransactionOutOfOrderException;
 use Drupal\mysql\Driver\Database\mysql\Connection as BaseMySqlConnection;
-use Drupal\mysqli\Driver\Database\mysqli\Parser\Parser;
 
 /**
  * MySQLi implementation of \Drupal\Core\Database\Connection.
  */
 class Connection extends BaseMySqlConnection {
-
-  /**
-   * The SQL parser.
-   */
-  private readonly Parser $parser;
 
   /**
    * {@inheritdoc}
@@ -178,13 +172,6 @@ class Connection extends BaseMySqlConnection {
    */
   public function lastInsertId(?string $name = NULL): string {
     return $this->connection->insert_id;
-  }
-
-  public function parser(): Parser {
-    if (!isset($this->parser)) {
-      $this->parser = new Parser();
-    }
-    return $this->parser;
   }
 
   /**

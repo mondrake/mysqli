@@ -33,17 +33,13 @@ final class Parser
     $patterns = [
       $this->getAnsiSQLStringLiteralPattern("'"),
       $this->getAnsiSQLStringLiteralPattern('"'),
-    ];
-
-    $patterns = array_merge($patterns, [
       self::BACKTICK_IDENTIFIER,
       self::BRACKET_IDENTIFIER,
       self::MULTICHAR,
       self::ONE_LINE_COMMENT,
       self::MULTI_LINE_COMMENT,
       self::OTHER,
-    ]);
-
+    ];
     $this->sqlPattern = sprintf('(%s)', implode('|', $patterns));
   }
 
@@ -75,7 +71,6 @@ final class Parser
       if (preg_match('~\G' . key($patterns) . '~s', $sql, $matches, 0, $offset) === 1) {
         $handler($matches[0]);
         reset($patterns);
-
         $offset += strlen($matches[0]);
       }
       elseif (preg_last_error() !== PREG_NO_ERROR) {

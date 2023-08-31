@@ -9,12 +9,18 @@ use Drupal\Core\Database\Event\StatementExecutionStartEvent;
 use Drupal\Core\Database\FetchModeTrait;
 use Drupal\Core\Database\RowCountException;
 use Drupal\Core\Database\StatementWrapperIterator;
+use Drupal\mysqli\Driver\Database\mysqli\Parser\Parser;
 use Drupal\mysqli\Driver\Database\mysqli\Parser\Visitor;
 
 /**
  * MySQLi implementation of \Drupal\Core\Database\Query\StatementInterface.
  */
 class Statement extends StatementWrapperIterator {
+
+  /**
+   * The SQL parser.
+   */
+  private readonly Parser $parser;
 
   /**
    * Holds the index position of named parameters.
@@ -344,13 +350,20 @@ class Statement extends StatementWrapperIterator {
     return TRUE;
   }
 
+  private function parser(): Parser {
+    if (!isset($this->parser)) {
+      $this->parser = new Parser();
+    }
+    return $this->parser;
+  }
+
   /**
    * @todo
    */
   private function convertNamedPlaceholdersToPositional(string $sql, array $args): array {
     $visitor = new Visitor($args);
   dump([__METHOD__, $sql]);
-    $this->connection->parser()->parse($sql, $visitor);
+    $this->parser()->parse($sql, $visitor);
     return [$visitor->getSQL(), $visitor->getParameters()];
   }
 
