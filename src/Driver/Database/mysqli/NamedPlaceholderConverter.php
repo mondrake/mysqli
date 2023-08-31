@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\mysqli\Driver\Database\mysqli\Parser;
+namespace Drupal\mysqli\Driver\Database\mysqli;
 
 /**
  * The SQL parser that focuses on identifying prepared statement parameters. It implements parsing other tokens like
@@ -39,9 +39,8 @@ final class NamedPlaceholderConverter
   /** @var list<mixed> */
   private array $convertedParameters = [];
 
-  public function __construct()
-  {
-    $patterns = [
+  public function __construct() {
+    $this->sqlPattern = sprintf('(%s)', implode('|', [
       $this->getAnsiSQLStringLiteralPattern("'"),
       $this->getAnsiSQLStringLiteralPattern('"'),
       self::BACKTICK_IDENTIFIER,
@@ -50,8 +49,7 @@ final class NamedPlaceholderConverter
       self::ONE_LINE_COMMENT,
       self::MULTI_LINE_COMMENT,
       self::OTHER,
-    ];
-    $this->sqlPattern = sprintf('(%s)', implode('|', $patterns));
+    ]));
   }
 
   /**
