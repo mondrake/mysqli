@@ -80,7 +80,7 @@ class Statement extends StatementWrapperIterator {
       // Replace named placeholders with positional ones if needed.
       $this->paramsPositions = array_flip(array_keys($args));
       $converter = new NamedPlaceholderConverter();
-      $converter->parse($sql, $args);
+      $converter->parse($this->queryString, $args);
       [$this->queryString, $args] = [$converter->getConvertedSQL(), $converter->getConvertedParameters()];
       $this->clientStatement = $this->mysqliConnection->prepare($this->queryString);
     }
