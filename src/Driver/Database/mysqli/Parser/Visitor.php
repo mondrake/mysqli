@@ -20,7 +20,11 @@ final class Visitor
    * @todo
    */
   public function __construct(array $parameters) {
-    $this->originalParameters = $parameters;
+    $pms = [];
+    foreach($parameters as $k => $v) {
+      $pms[substr($k, 1)] = $v;
+    }
+    $this->originalParameters = $pms;
   }
 
   /**

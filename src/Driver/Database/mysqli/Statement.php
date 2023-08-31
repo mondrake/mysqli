@@ -348,20 +348,10 @@ class Statement extends StatementWrapperIterator {
    * @todo
    */
   private function convertNamedPlaceholdersToPositional(string $sql, array $args): array {
-    $pms = [];
-    foreach($args as $k => $v) {
-      $pms[substr($k, 1)] = $v;
-    }
-
-    $visitor = new Visitor($pms);
-
-dump([__METHOD__, $sql]);
+    $visitor = new Visitor($args);
+  dump([__METHOD__, $sql]);
     $this->connection->parser()->parse($sql, $visitor);
-
-    $newSql = $visitor->getSQL();
-    $newParameters = $visitor->getParameters();
-
-    return [$newSql, $newParameters];
+    return [$visitor->getSQL(), $visitor->getParameters()];
   }
 
 }
