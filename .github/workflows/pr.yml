@@ -102,8 +102,9 @@ jobs:
 
       - name: Run tests ${{ matrix.test-args }}
         continue-on-error: true
-#        run: vendor/bin/phpunit -c core --color=always ${{ matrix.test-args }}
-        run: vendor/bin/phpunit -c core --color=always modules/contrib/mysqli/tests/src/Kernel/mysqli/TransactionTest.php
+        run: vendor/bin/phpunit -c core --color=always ${{ matrix.test-args }}
+#        run: vendor/bin/phpunit -c core --color=always modules/contrib/mysqli/tests/src/Kernel/mysqli/TransactionTest.php
+
 #      - uses: actions/upload-artifact@v3
 #        with:
 #          name: test-results
