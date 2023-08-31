@@ -38,8 +38,7 @@ class TransactionManager extends TransactionManagerBase {
     }
     catch (\mysqli_sql_exception $e) {
       // If the rollback failed, most likely the savepoint was not there
-      // because the transaction is no longer active. In this case
-      dump($e);
+      // because the transaction is no longer active. In this case we cleanup.
       $this->resetStack();
       $this->setConnectionTransactionState(ClientConnectionTransactionState::Voided);
       $this->processPostTransactionCallbacks();

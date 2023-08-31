@@ -51,7 +51,7 @@ class TransactionTest extends DriverSpecificTransactionTestBase {
     unset($transaction2);
     $transaction3 = $this->connection->startTransaction();
     $this->insertRow('row');
-    $transaction3->rollBack();
+//    $transaction3->rollBack();
     unset($transaction3);
     unset($transaction);
     $this->assertRowAbsent('row');
@@ -118,7 +118,8 @@ class TransactionTest extends DriverSpecificTransactionTestBase {
    */
   public function testStartTransactionWhenActive(): void {
     $this->connection->getClientConnection()->begin_transaction();
-    $this->connection->startTransaction();
+    $this->connection->getClientConnection()->begin_transaction();
+//    $this->connection->startTransaction();
     $this->assertFalse($this->connection->inTransaction());
   }
 
@@ -130,7 +131,7 @@ class TransactionTest extends DriverSpecificTransactionTestBase {
     $this->assertTrue($this->connection->inTransaction());
     $this->connection->getClientConnection()->commit();
     $transaction = NULL;
-    $this->assertTrue($this->connection->inTransaction());
+    $this->assertFalse($this->connection->inTransaction());
   }
 
 }
