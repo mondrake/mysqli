@@ -60,7 +60,7 @@ final class Parser
    *
    * @todo
    */
-  public function parse(string $sql, string $args): void {
+  public function parse(string $sql, array $args): void {
     // Remove the initial colon from the placeholders.
     foreach($args as $key => $value) {
       $this->originalParameters[substr($key, 1)] = $value;
