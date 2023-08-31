@@ -96,9 +96,9 @@ class TransactionTest extends DriverSpecificTransactionTestBase {
       try {
         // Rollback the outer transaction.
         $transaction->rollBack();
-        // @see \Drupal\mysql\Driver\Database\mysql\Connection::rollBack()
-// @todo mysqli does not fail when rolling back and no transaction active.
-//        $this->fail('Rolling back a transaction containing DDL should produce a warning.');
+        // Note: Difference from MySQL.
+        // MySQLi does not fail when rolling back and no transaction active.
+        // $this->fail('Rolling back a transaction containing DDL should produce a warning.');
       }
       catch (Warning $warning) {
         $this->assertSame('Rollback attempted when there is no active transaction. This can cause data integrity issues.', $warning->getMessage());
