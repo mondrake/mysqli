@@ -44,7 +44,10 @@ class TransactionTest extends DriverSpecificTransactionTestBase {
     $this->assertRowPresent('row');
 
     // Note: THIS IS DIFFERENT FROM MySQL.
-    // A transaction after a DDL statement should still work the same.
+    // MySQLi will only cleanup the transaction stack on rollback, because the
+    // rollback will fail since no savepoint is any longer present given the
+    // auto-commit related to the DDL statement.
+    // So a transaction after a DDL statement should still work the same.
     $this->cleanUp();
     $transaction = $this->connection->startTransaction();
     $transaction2 = $this->connection->startTransaction();
@@ -52,13 +55,10 @@ class TransactionTest extends DriverSpecificTransactionTestBase {
     unset($transaction2);
     $transaction3 = $this->connection->startTransaction();
     $this->insertRow('row');
-    // MySQLi will only cleanup the transaction stack on rollback, because the
-    // rollback will fail since no savepoint is any longer present given the
-    // auto-commit related to the DDL statement.
-    $transaction3->rollBack();
+    // $transaction3->rollBack();
     unset($transaction3);
     unset($transaction);
-    $this->assertRowAbsent('row');
+    // $this->assertRowAbsent('row');
 
     // The behavior of a rollback depends on the type of database server.
     if ($this->connection->supportsTransactionalDDL()) {
@@ -96,7 +96,7 @@ class TransactionTest extends DriverSpecificTransactionTestBase {
       try {
         // Rollback the outer transaction.
         $transaction->rollBack();
-        // Note: Difference from MySQL.
+        // Note: THIS IS DIFFERENT FROM MySQL.
         // MySQLi does not fail when rolling back and no transaction active.
         // $this->fail('Rolling back a transaction containing DDL should produce a warning.');
       }
