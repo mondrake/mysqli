@@ -113,4 +113,23 @@ class TransactionTest extends DriverSpecificTransactionTestBase {
     $this->markTestSkipped('Skipping this for mysqli');
   }
 
+  /**
+   * Tests starting a transaction when there's one active on the client.
+   */
+  public function testStartTransactionWhenActive(): void {
+    $this->connection->getClientConnection()->begin_transaction();
+    $this->connection->startTransaction();
+  }
+
+  /**
+   * Tests committing a transaction when there's none active on the client.
+   */
+  public function testStartTransactionWhenActive(): void {
+    $transaction = $this->connection->startTransaction();
+    $this->assertTrue($this->connection->inTransaction());
+    $this->connection->getClientConnection()->commit();
+    $transaction = NULL;
+    $this->assertFalse($this->connection->inTransaction());
+  }
+
 }
