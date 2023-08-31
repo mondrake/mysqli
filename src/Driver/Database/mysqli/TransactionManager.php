@@ -41,7 +41,7 @@ class TransactionManager extends TransactionManagerBase {
       // because the transaction is no longer active. In this case we rollback
       // to root and cleanup.
       $this->connection->getClientConnection()->rollBack();
-//      $this->resetStack();
+      $this->resetStack();
       $this->setConnectionTransactionState(ClientConnectionTransactionState::Voided);
       $this->processPostTransactionCallbacks();
       return TRUE;
