@@ -85,29 +85,25 @@ jobs:
           composer config repositories.test-run '{"type": "path", "url": "mysqli_staging", "options": {"symlink": false}}'
           composer require "mondrake/mysqli:dev-test-run-branch" --no-progress --ansi
 
-#      - name: Install Drupal
-#        run: |
-#          cp mysqli_staging/tests/github/install_* .
-#          # Install via Drush.
-#          vendor/bin/drush site-install standard --db-url=$SIMPLETEST_DB -y
-#          # Report installation status.
-#          php install_report.php
-#          vendor/bin/drush core:status
-#          vendor/bin/drush core:requirements
-#          vendor/bin/drush pml --type=module --no-core
-#          # Spin a test webserver.
-#          mkdir -p sites/default/files/simpletest
-#          vendor/bin/drush runserver localhost:8080 --default-server=localhost:8080 &
-#          sleep 1s
+      - name: Install Drupal
+        run: |
+          cp mysqli_staging/tests/github/install_* .
+          # Install via Drush.
+          vendor/bin/drush site-install standard --db-url=$SIMPLETEST_DB -y
+          # Report installation status.
+          php install_report.php
+          vendor/bin/drush core:status
+          vendor/bin/drush core:requirements
+          vendor/bin/drush pml --type=module --no-core
+          # Spin a test webserver.
+          mkdir -p sites/default/files/simpletest
+          vendor/bin/drush runserver localhost:8080 --default-server=localhost:8080 &
+          sleep 1s
 
       - name: Run tests ${{ matrix.test-args }}
         continue-on-error: true
-#        run: vendor/bin/phpunit -c core --color=always ${{ matrix.test-args }}
-        run: vendor/bin/phpunit -c core --color=always modules/contrib/mysqli/tests/src/Kernel/mysqli/TransactionTest.php
-
-      - name: Run tests b
-        continue-on-error: true
-        run: vendor/bin/phpunit -c core --color=always core/tests/Drupal/KernelTests/Core/Database/InsertTest.php
+        run: vendor/bin/phpunit -c core --color=always ${{ matrix.test-args }}
+#        run: vendor/bin/phpunit -c core --color=always modules/contrib/mysqli/tests/src/Kernel/mysqli/TransactionTest.php
 
 #      - uses: actions/upload-artifact@v3
 #        with:
