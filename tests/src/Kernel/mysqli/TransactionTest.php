@@ -124,7 +124,7 @@ class TransactionTest extends DriverSpecificTransactionTestBase {
   /**
    * Tests committing a transaction when there's none active on the client.
    */
-  public function testStartTransactionWhenActive(): void {
+  public function testCommitTransactionWhenInactive(): void {
     $transaction = $this->connection->startTransaction();
     $this->assertTrue($this->connection->inTransaction());
     $this->connection->getClientConnection()->commit();
