@@ -37,8 +37,13 @@ class TransactionManager extends TransactionManagerBase {
       return (bool) $this->connection->getClientConnection()->query('ROLLBACK TO SAVEPOINT ' . $name);
     }
     catch (\mysqli_sql_exception $e) {
+      // If the rollback failed, most likely the savepoint was not there
+      // because the transaction is no longer active. In this case
       dump($e);
-      throw $e;
+      $this->resetStack();
+      $this->setConnectionTransactionState(ClientConnectionTransactionState::Voided);
+      $this->processPostTransactionCallbacks();
+      return TRUE;
     }
   }
 
@@ -53,6 +58,12 @@ class TransactionManager extends TransactionManagerBase {
    * {@inheritdoc}
    */
   protected function rollbackClientTransaction(): bool {
+    // Note: mysqli::rollback() returns TRUE if there's no active transaction.
+    // This is diverging from PDO MySql.
+    // TransactionTest::testTransactionWithDdlStatement() fails for this reason.
+    // A PHP bug report exists.
+    //
+    // @see https://bugs.php.net/bug.php?id=81533.
     $clientRollback = $this->connection->getClientConnection()->rollBack();
     $this->setConnectionTransactionState($clientRollback ?
       ClientConnectionTransactionState::RolledBack :

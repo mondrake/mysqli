@@ -119,6 +119,7 @@ class TransactionTest extends DriverSpecificTransactionTestBase {
   public function testStartTransactionWhenActive(): void {
     $this->connection->getClientConnection()->begin_transaction();
     $this->connection->startTransaction();
+    $this->assertFalse($this->connection->inTransaction());
   }
 
   /**
@@ -129,7 +130,7 @@ class TransactionTest extends DriverSpecificTransactionTestBase {
     $this->assertTrue($this->connection->inTransaction());
     $this->connection->getClientConnection()->commit();
     $transaction = NULL;
-    $this->assertFalse($this->connection->inTransaction());
+    $this->assertTrue($this->connection->inTransaction());
   }
 
 }

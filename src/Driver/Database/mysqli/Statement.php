@@ -170,14 +170,11 @@ class Statement extends StatementWrapperIterator {
 
     $ret = match($mode) {
       \PDO::FETCH_ASSOC => $row,
-      \PDO::FETCH_BOTH => $this->assocToBoth($row),
       \PDO::FETCH_NUM => $this->assocToNum($row),
       \PDO::FETCH_LAZY, \PDO::FETCH_OBJ => $this->assocToObj($row),
-      \PDO::FETCH_CLASS | \PDO::FETCH_CLASSTYPE => $this->assocToClassType($row, $this->fetchOptions['constructor_args']),
       \PDO::FETCH_CLASS => $this->assocToClass($row, $this->fetchOptions['class'], $this->fetchOptions['constructor_args']),
-      \PDO::FETCH_INTO => $this->assocIntoObject($row, $this->fetchOptions['object']),
       \PDO::FETCH_COLUMN => $this->assocToColumn($row, $columnNames, $this->fetchOptions['column']),
-      default => throw new DatabaseExceptionWrapper("Unknown fetch type '{$mode}'"),
+      default => throw new DatabaseExceptionWrapper('Fetch mode ' . ($this->fetchModeLiterals[$mode] ?? $mode) . ' is not supported.'),
     };
 
     $this->setResultsetCurrentRow($ret);
