@@ -28,6 +28,18 @@ final class Parser
 
   private string $sqlPattern;
 
+  /** @var array<int,mixed>|array<string,mixed> */
+  private $originalParameters = [];
+
+  /** @var int */
+  private $originalParameterIndex = 0;
+
+  /** @var list<string> */
+  private $convertedSQL = [];
+
+  /** @var list<mixed> */
+  private $convertedParameters = [];
+
   public function __construct()
   {
     $patterns = [
@@ -48,20 +60,28 @@ final class Parser
    *
    * @todo
    */
-  public function parse(string $sql, Visitor $visitor): void {
+  public function parse(string $sql, string $args): void {
+    // Remove the initial colon from the placeholders.
+    foreach($args as $key => $value) {
+      $this->originalParameters[substr($key, 1)] = $value;
+    }
+    $this->originalParameterIndex = 0;
+    $this->convertedSQL = [];
+    $this->convertedParameters = [];
+
     /** @var array<string,callable> $patterns */
     $patterns = [
-      self::NAMED_PARAMETER => static function (string $sql) use ($visitor): void {
-        $visitor->acceptNamedParameter($sql);
+      self::NAMED_PARAMETER => static function (string $sql): void {
+        $this->acceptNamedParameter($sql);
       },
-      self::POSITIONAL_PARAMETER => static function (string $sql) use ($visitor): void {
-        $visitor->acceptPositionalParameter($sql);
+      self::POSITIONAL_PARAMETER => static function (string $sql): void {
+        $this->acceptPositionalParameter($sql);
       },
-      $this->sqlPattern => static function (string $sql) use ($visitor): void {
-        $visitor->acceptOther($sql);
+      $this->sqlPattern => static function (string $sql): void {
+        $this->acceptOther($sql);
       },
-      self::SPECIAL => static function (string $sql) use ($visitor): void {
-        $visitor->acceptOther($sql);
+      self::SPECIAL => static function (string $sql): void {
+        $this->acceptOther($sql);
       },
     ];
 
@@ -91,4 +111,64 @@ final class Parser
     return $delimiter . '[^' . $delimiter . ']*' . $delimiter;
   }
 
-}
+  /**
+   * @todo
+   */
+  private function acceptPositionalParameter(string $sql): void {
+    dump([__METHOD__, $sql]);
+      $index = $this->originalParameterIndex;
+
+      if (!array_key_exists($index, $this->originalParameters)) {
+        throw \RuntimeException('Missing Positional Parameter ' . $index);
+      }
+
+      $this->acceptParameter($index, $this->originalParameters[$index]);
+
+      $this->originalParameterIndex++;
+    }
+
+    /**
+     * @todo
+     */
+    private function acceptNamedParameter(string $sql): void {
+    dump([__METHOD__, $sql]);
+      $name = substr($sql, 1);
+
+      if (!array_key_exists($name, $this->originalParameters)) {
+        throw \RuntimeException('Missing Named Parameter ' . $name);
+      }
+
+      $this->acceptParameter($name, $this->originalParameters[$name]);
+    }
+
+    /**
+     * @todo
+     */
+    private function acceptOther(string $sql): void {
+    dump([__METHOD__, $sql]);
+      $this->convertedSQL[] = $sql;
+    }
+
+    /**
+     * @todo
+     */
+    public function getConvertedSQL(): string {
+      return implode('', $this->convertedSQL);
+    }
+
+    /**
+     * @todo
+     */
+    public function getConvertedParameters(): array {
+      return $this->convertedParameters;
+    }
+
+    /**
+     * @todo
+     */
+    private function acceptParameter($key, $value): void {
+      $this->convertedSQL[] = '?';
+      $this->convertedParameters[] = $value;
+    }
+
+  }

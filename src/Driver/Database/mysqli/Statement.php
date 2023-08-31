@@ -18,11 +18,6 @@ use Drupal\mysqli\Driver\Database\mysqli\Parser\Visitor;
 class Statement extends StatementWrapperIterator {
 
   /**
-   * The SQL parser.
-   */
-  private readonly Parser $parser;
-
-  /**
    * Holds the index position of named parameters.
    */
   protected array $paramsPositions;
@@ -350,21 +345,17 @@ class Statement extends StatementWrapperIterator {
     return TRUE;
   }
 
-  private function parser(): Parser {
-    if (!isset($this->parser)) {
-      $this->parser = new Parser();
-    }
-    return $this->parser;
-  }
-
   /**
    * @todo
    */
   private function convertNamedPlaceholdersToPositional(string $sql, array $args): array {
-    $visitor = new Visitor($args);
-  dump([__METHOD__, $sql]);
-    $this->parser()->parse($sql, $visitor);
-    return [$visitor->getSQL(), $visitor->getParameters()];
+    $parser = new Parser();
+    $parser->parse($sql, $args);
+    return [$parser->getConvertedSQL(), $parser->getConvertedParameters()];
+//    $visitor = new Visitor($args);
+//  dump([__METHOD__, $sql]);
+//    $parser->parse($sql, $visitor);
+//    return [$visitor->getSQL(), $visitor->getParameters()];
   }
 
 }
