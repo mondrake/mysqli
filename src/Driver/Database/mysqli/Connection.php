@@ -22,14 +22,9 @@ class Connection extends BaseMySqlConnection {
 
   /**
    * Stores the server version after it has been retrieved from the database.
-   *
-   * @var string
    */
   private string $serverVersion;
 
-  /**
-   * {@inheritdoc}
-   */
   public function __construct(\mysqli $connection, array $connection_options) {
     // If the SQL mode doesn't include 'ANSI_QUOTES' (explicitly or via a
     // combination mode), then MySQL doesn't interpret a double quote as an

@@ -3,19 +3,22 @@
 namespace Drupal\mysqli\Driver\Database\mysqli;
 
 /**
- * The SQL parser that focuses on identifying prepared statement parameters. It implements parsing other tokens like
- * string literals and comments only as a way to not confuse their contents with the the parameter placeholders.
+ * A class to convert a SQL statement with named placeholders to positional.
  *
- * The parsing logic and the implementation is inspired by the PHP PDO parser.
+ * The parsing logic and the implementation is inspired by the PHP PDO parser,
+ * and a simplified copy of the parser implementation done by the Doctrine DBAL
+ * project.
  *
  * @internal
  *
- * @see https://github.com/php/php-src/blob/php-7.4.12/ext/pdo/pdo_sql_parser.re#L49-L69
+ * @see https://github.com/doctrine/dbal/tree/3.6.x/src/SQL/Parser
  */
 final class NamedPlaceholderConverter
 {
+  /**
+   * A list of regex patterns for parsing.
+   */
   private const SPECIAL_CHARS = ':\?\'"`\\[\\-\\/';
-
   private const BACKTICK_IDENTIFIER = '`[^`]*`';
   private const BRACKET_IDENTIFIER = '(?<!\b(?i:ARRAY))\[(?:[^\]])*\]';
   private const MULTICHAR = ':{2,}';
@@ -26,20 +29,42 @@ final class NamedPlaceholderConverter
   private const SPECIAL = '[' . self::SPECIAL_CHARS . ']';
   private const OTHER = '[^' . self::SPECIAL_CHARS . ']+';
 
+  /**
+   * The combined regex pattern for parsing.
+   */
   private string $sqlPattern;
 
-  /** @var array<int,mixed>|array<string,mixed> */
+  /**
+   * The list of original named arguments.
+   *
+   * The initial placeholder colon is removed.
+   */
   private array $originalParameters = [];
 
+  /**
+   * The maximum positional placeholder parsed.
+   *
+   * Normally Drupal does not produce SQL with positional placeholders, but
+   * this is to manage the edge case.
+   */
   private int $originalParameterIndex = 0;
 
-  /** @var list<string> */
+  /**
+   * The converted SQL statement in its parts.
+   *
+   * @var string[]
+   */
   private array $convertedSQL = [];
 
-  /** @var list<mixed> */
+  /**
+   * The list of converted arguments.
+   *
+   * @var mixed[]
+   */
   private array $convertedParameters = [];
 
   public function __construct() {
+    // Builds the combined regex pattern for parsing.
     $this->sqlPattern = sprintf('(%s)', implode('|', [
       $this->getAnsiSQLStringLiteralPattern("'"),
       $this->getAnsiSQLStringLiteralPattern('"'),
@@ -53,9 +78,15 @@ final class NamedPlaceholderConverter
   }
 
   /**
-   * Parses the given SQL statement
+   * Parses an SQL statement with named placeholders.
    *
-   * @todo
+   * This methods explodes the SQL statement in parts that can be reassembled
+   * into a string with positional placeholders.
+   *
+   * @param string $sql
+   *   The SQL statement with named placeholders.
+   * @param mixed[] $args
+   *   The statement arguments.
    */
   public function parse(string $sql, array $args): void {
     // Remove the initial colon from the placeholders.
@@ -69,16 +100,16 @@ final class NamedPlaceholderConverter
     /** @var array<string,callable> $patterns */
     $patterns = [
       self::NAMED_PARAMETER => function (string $sql): void {
-        $this->acceptNamedParameter($sql);
+        $this->addNamedParameter($sql);
       },
       self::POSITIONAL_PARAMETER => function (string $sql): void {
-        $this->acceptPositionalParameter($sql);
+        $this->addPositionalParameter($sql);
       },
       $this->sqlPattern => function (string $sql): void {
-        $this->acceptOther($sql);
+        $this->addOther($sql);
       },
       self::SPECIAL => function (string $sql): void {
-        $this->acceptOther($sql);
+        $this->addOther($sql);
       },
     ];
 
@@ -102,67 +133,85 @@ final class NamedPlaceholderConverter
   }
 
   /**
-   * @todo
+   * Helper to return a regex pattern from a delimiter character..
+   *
+   * @param string $delimiter
+   *   A delimiter character.
+   *
+   * @return string
+   *   The regex pattern.
    */
   private function getAnsiSQLStringLiteralPattern(string $delimiter): string {
     return $delimiter . '[^' . $delimiter . ']*' . $delimiter;
   }
 
   /**
-   * @todo
+   * Adds a positional placeholder to the converted parts.
+   *
+   * Normally Drupal does not produce SQL with positional placeholders, but
+   * this is to manage the edge case.
+   *
+   * @param string $sql
+   *   The SQL part.
    */
-  private function acceptPositionalParameter(string $sql): void {
+  private function addPositionalParameter(string $sql): void {
     $index = $this->originalParameterIndex;
 
     if (!array_key_exists($index, $this->originalParameters)) {
       throw \RuntimeException('Missing Positional Parameter ' . $index);
     }
 
-    $this->acceptParameter($this->originalParameters[$index]);
+    $this->convertedSQL[] = '?';
+    $this->convertedParameters[] = $this->originalParameters[$index];
 
     $this->originalParameterIndex++;
   }
 
   /**
-   * @todo
+   * Adds a named placeholder to the converted parts.
+   *
+   * @param string $sql
+   *   The SQL part.
    */
-  private function acceptNamedParameter(string $sql): void {
+  private function addNamedParameter(string $sql): void {
     $name = substr($sql, 1);
 
     if (!array_key_exists($name, $this->originalParameters)) {
       throw \RuntimeException('Missing Named Parameter ' . $name);
     }
 
-    $this->acceptParameter($this->originalParameters[$name]);
+    $this->convertedSQL[] = '?';
+    $this->convertedParameters[] = $this->originalParameters[$name];
   }
 
   /**
-   * @todo
+   * Adds a generic SQL string fragment to the converted parts.
+   *
+   * @param string $sql
+   *   The SQL part.
    */
-  private function acceptOther(string $sql): void {
+  private function addOther(string $sql): void {
     $this->convertedSQL[] = $sql;
   }
 
   /**
-   * @todo
+   * Returns the converted SQL statement with positional placeholders.
+   *
+   * @return string
+   *   The converted SQL statement with positional placeholders.
    */
   public function getConvertedSQL(): string {
     return implode('', $this->convertedSQL);
   }
 
   /**
-   * @todo
+   * Returns the array of arguments for use with positional placeholders.
+   *
+   * @return mixed[]
+   *   The array of arguments for use with positional placeholders.
    */
   public function getConvertedParameters(): array {
     return $this->convertedParameters;
-  }
-
-  /**
-   * @todo
-   */
-  private function acceptParameter(mixed $value): void {
-    $this->convertedSQL[] = '?';
-    $this->convertedParameters[] = $value;
   }
 
 }
