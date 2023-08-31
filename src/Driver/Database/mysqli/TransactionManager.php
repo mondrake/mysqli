@@ -33,7 +33,13 @@ class TransactionManager extends TransactionManagerBase {
     // Mysqli does not have a rollback_to_savepoint method, and it does not
     // allow a prepared statement for 'ROLLBACK TO SAVEPOINT', so we need to
     // fallback to query on the client connection directly.
-    return (bool) $this->connection->getClientConnection()->query('ROLLBACK TO SAVEPOINT ' . $name);
+    try {
+      return (bool) $this->connection->getClientConnection()->query('ROLLBACK TO SAVEPOINT ' . $name);
+    }
+    catch (\mysqli_sql_exception $e) {
+      dump($e);
+      throw $e;
+    }
   }
 
   /**
