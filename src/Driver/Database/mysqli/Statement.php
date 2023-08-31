@@ -9,6 +9,7 @@ use Drupal\Core\Database\Event\StatementExecutionStartEvent;
 use Drupal\Core\Database\FetchModeTrait;
 use Drupal\Core\Database\RowCountException;
 use Drupal\Core\Database\StatementWrapperIterator;
+use Drupal\mysqli\Driver\Database\mysqli\Parser\Visitor;
 
 /**
  * MySQLi implementation of \Drupal\Core\Database\Query\StatementInterface.
@@ -79,7 +80,7 @@ class Statement extends StatementWrapperIterator {
     if (!isset($this->clientStatement)) {
       // Replace named placeholders with positional ones if needed.
       $this->paramsPositions = array_flip(array_keys($args));
-      [$this->queryString, $args] = $this->connection->convertNamedPlaceholdersToPositional($this->queryString, $args);
+      [$this->queryString, $args] = $this->convertNamedPlaceholdersToPositional($this->queryString, $args);
       $this->clientStatement = $this->mysqliConnection->prepare($this->queryString);
     }
     else {
@@ -341,6 +342,26 @@ class Statement extends StatementWrapperIterator {
         break;
     }
     return TRUE;
+  }
+
+  /**
+   * @todo
+   */
+  private function convertNamedPlaceholdersToPositional(string $sql, array $args): array {
+    $pms = [];
+    foreach($args as $k => $v) {
+      $pms[substr($k, 1)] = $v;
+    }
+
+    $visitor = new Visitor($pms);
+
+dump([__METHOD__, $sql]);
+    $this->connection->parser()->parse($sql, $visitor);
+
+    $newSql = $visitor->getSQL();
+    $newParameters = $visitor->getParameters();
+
+    return [$newSql, $newParameters];
   }
 
 }

@@ -27,6 +27,7 @@ final class Visitor
    * @todo
    */
   public function acceptPositionalParameter(string $sql): void {
+  dump([__METHOD__, $sql]);
     $index = $this->originalParameterIndex;
 
     if (!array_key_exists($index, $this->originalParameters)) {
@@ -42,6 +43,7 @@ final class Visitor
    * @todo
    */
   public function acceptNamedParameter(string $sql): void {
+  dump([__METHOD__, $sql]);
     $name = substr($sql, 1);
 
     if (!array_key_exists($name, $this->originalParameters)) {
@@ -55,6 +57,7 @@ final class Visitor
    * @todo
    */
   public function acceptOther(string $sql): void {
+  dump([__METHOD__, $sql]);
     $this->convertedSQL[] = $sql;
   }
 

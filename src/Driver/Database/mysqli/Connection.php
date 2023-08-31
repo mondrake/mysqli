@@ -10,7 +10,6 @@ use Drupal\Core\Database\TransactionNoActiveException;
 use Drupal\Core\Database\TransactionOutOfOrderException;
 use Drupal\mysql\Driver\Database\mysql\Connection as BaseMySqlConnection;
 use Drupal\mysqli\Driver\Database\mysqli\Parser\Parser;
-use Drupal\mysqli\Driver\Database\mysqli\Parser\Visitor;
 
 /**
  * MySQLi implementation of \Drupal\Core\Database\Connection.
@@ -19,10 +18,8 @@ class Connection extends BaseMySqlConnection {
 
   /**
    * The SQL parser.
-   *
-   * @todo
    */
-  protected Parser $parser;
+  private readonly Parser $parser;
 
   /**
    * {@inheritdoc}
@@ -183,28 +180,11 @@ class Connection extends BaseMySqlConnection {
     return $this->connection->insert_id;
   }
 
-  /**
-   * @todo
-   */
-  public function convertNamedPlaceholdersToPositional(string $sql, array $args): array {
+  public function parser(): Parser {
     if (!isset($this->parser)) {
       $this->parser = new Parser();
     }
-
-    $pms = [];
-    foreach($args as $k => $v) {
-      $pms[substr($k, 1)] = $v;
-    }
-
-    $visitor = new Visitor($pms);
-
-    $this->parser->parse($sql, $visitor);
-
-    $newSql = $visitor->getSQL();
-    $newParameters = $visitor->getParameters();
-dump([$sql, $args, $pms, $newSql, $newParameters]);
-
-    return [$newSql, $newParameters];
+    return $this->parser;
   }
 
   /**
