@@ -12,7 +12,7 @@ namespace Drupal\mysqli\Driver\Database\mysqli\Parser;
  *
  * @see https://github.com/php/php-src/blob/php-7.4.12/ext/pdo/pdo_sql_parser.re#L49-L69
  */
-final class Parser
+final class NamedPlaceholderConverter
 {
   private const SPECIAL_CHARS = ':\?\'"`\\[\\-\\/';
 
@@ -120,7 +120,7 @@ final class Parser
       throw \RuntimeException('Missing Positional Parameter ' . $index);
     }
 
-    $this->acceptParameter($index, $this->originalParameters[$index]);
+    $this->acceptParameter($this->originalParameters[$index]);
 
     $this->originalParameterIndex++;
   }
@@ -135,7 +135,7 @@ final class Parser
       throw \RuntimeException('Missing Named Parameter ' . $name);
     }
 
-    $this->acceptParameter($name, $this->originalParameters[$name]);
+    $this->acceptParameter($this->originalParameters[$name]);
   }
 
   /**
@@ -162,7 +162,7 @@ final class Parser
   /**
    * @todo
    */
-  private function acceptParameter($key, $value): void {
+  private function acceptParameter(mixed $value): void {
     $this->convertedSQL[] = '?';
     $this->convertedParameters[] = $value;
   }

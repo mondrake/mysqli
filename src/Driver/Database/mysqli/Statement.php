@@ -9,8 +9,6 @@ use Drupal\Core\Database\Event\StatementExecutionStartEvent;
 use Drupal\Core\Database\FetchModeTrait;
 use Drupal\Core\Database\RowCountException;
 use Drupal\Core\Database\StatementWrapperIterator;
-use Drupal\mysqli\Driver\Database\mysqli\Parser\Parser;
-use Drupal\mysqli\Driver\Database\mysqli\Parser\Visitor;
 
 /**
  * MySQLi implementation of \Drupal\Core\Database\Query\StatementInterface.
@@ -349,13 +347,9 @@ class Statement extends StatementWrapperIterator {
    * @todo
    */
   private function convertNamedPlaceholdersToPositional(string $sql, array $args): array {
-    $parser = new Parser();
-    $parser->parse($sql, $args);
-    return [$parser->getConvertedSQL(), $parser->getConvertedParameters()];
-//    $visitor = new Visitor($args);
-//  dump([__METHOD__, $sql]);
-//    $parser->parse($sql, $visitor);
-//    return [$visitor->getSQL(), $visitor->getParameters()];
+    $converter = new NamedPlaceholderConverter();
+    $converter->parse($sql, $args);
+    return [$converter->getConvertedSQL(), $converter->getConvertedParameters()];
   }
 
 }
