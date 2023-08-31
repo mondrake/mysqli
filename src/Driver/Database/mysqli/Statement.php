@@ -79,7 +79,9 @@ class Statement extends StatementWrapperIterator {
     if (!isset($this->clientStatement)) {
       // Replace named placeholders with positional ones if needed.
       $this->paramsPositions = array_flip(array_keys($args));
-      [$this->queryString, $args] = $this->convertNamedPlaceholdersToPositional($this->queryString, $args);
+      $converter = new NamedPlaceholderConverter();
+      $converter->parse($sql, $args);
+      [$this->queryString, $args] = [$converter->getConvertedSQL(), $converter->getConvertedParameters()];
       $this->clientStatement = $this->mysqliConnection->prepare($this->queryString);
     }
     else {
@@ -341,15 +343,6 @@ class Statement extends StatementWrapperIterator {
         break;
     }
     return TRUE;
-  }
-
-  /**
-   * @todo
-   */
-  private function convertNamedPlaceholdersToPositional(string $sql, array $args): array {
-    $converter = new NamedPlaceholderConverter();
-    $converter->parse($sql, $args);
-    return [$converter->getConvertedSQL(), $converter->getConvertedParameters()];
   }
 
 }
