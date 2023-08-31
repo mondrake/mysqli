@@ -51,10 +51,14 @@ class TransactionTest extends DriverSpecificTransactionTestBase {
     unset($transaction2);
     $transaction3 = $this->connection->startTransaction();
     $this->insertRow('row');
-//    $transaction3->rollBack();
+    // Note: Difference from MySQL.
+    // MySQLi will only cleanup the transaction stack on rollback, because the
+    // rollback will fail since no savepoint is any longer present given the
+    // auto-commit related to the DDL statement.
+    $transaction3->rollBack();
     unset($transaction3);
     unset($transaction);
-//    $this->assertRowAbsent('row');
+    $this->assertRowAbsent('row');
 
     // The behavior of a rollback depends on the type of database server.
     if ($this->connection->supportsTransactionalDDL()) {
