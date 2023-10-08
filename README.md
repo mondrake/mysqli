@@ -1,3 +1,6 @@
+This module was incubated here, but now development and implementation moved to Drupal core
+issue queue. See https://www.drupal.org/project/drupal/issues/3259709.
+
 # mysqli
 
 [![PHPUnit Testing](https://github.com/mondrake/mysqli/actions/workflows/test.yml/badge.svg)](https://github.com/mondrake/mysqli/actions/workflows/test.yml)
